@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>教員用画面 - 早押し状況</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background-color: #f4f4f9; }
+        .container { display: flex; justify-content: space-around; margin-top: 20px; }
+        .choice-box { width: 22%; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h2 { color: #333; border-bottom: 2px solid #ddd; padding-bottom: 5px;}
+        ol { text-align: left; padding-left: 20px; font-size: 1.2rem; font-weight: bold; }
+        button { margin-top: 30px; padding: 15px 30px; font-size: 1.2rem; background-color: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>解答状況（早い順）</h1>
+    <button onclick="resetQuestion()">次の問題へ（リセット）</button>
+    
+    <div class="container">
+        <div class="choice-box"><h2>A</h2><ol id="list-A"></ol></div>
+        <div class="choice-box"><h2>B</h2><ol id="list-B"></ol></div>
+        <div class="choice-box"><h2>C</h2><ol id="list-C"></ol></div>
+        <div class="choice-box"><h2>D</h2><ol id="list-D"></ol></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        // サーバーからデータを受け取って画面を更新
+        socket.on('update_teacher', (answers) => {
+            ['A', 'B', 'C', 'D'].forEach(choice => {
+                const list = document.getElementById(`list-${choice}`);
+                list.innerHTML = ''; // 一旦クリア
+                answers[choice].forEach(name => {
+                    const li = document.createElement('li');
+                    li.textContent = name;
+                    list.appendChild(li);
+                });
+            });
+        });
+
+        // リセットボタンを押した時
+        function resetQuestion() {
+            socket.emit('reset_question');
+        }
+    </script>
+</body>
+</html>
