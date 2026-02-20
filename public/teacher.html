@@ -90,7 +90,8 @@
 
         <div class="qr-section">
             <p style="font-weight: bold; margin: 0;">👇 生徒用 参加QRコード 👇</p>
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://localhost:3000/student.html" alt="QR Code">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://hayaoshiquiz.onrender.com/student.html" alt="QR Code">
+            <p style="font-size: 0.9rem; margin-top: 5px; color: #666;">https://hayaoshiquiz.onrender.com/student.html</p>
         </div>
         
         <h3 style="text-align: center; margin-top: 20px;">参加中の生徒</h3>
@@ -194,12 +195,12 @@
         const choiceLetters = ["A", "B", "C", "D"];
 
         // ==========================================
-        // 音声再生コントロール（Apple TV対応版）
+        // 音声再生コントロール
         // ==========================================
         function playAudio(id) {
             const audioEl = document.getElementById(id);
             if(audioEl) {
-                audioEl.currentTime = 0; // 連続して押しても最初から再生されるようにリセット
+                audioEl.currentTime = 0; 
                 audioEl.play().catch(e => console.log(`[Audio] ${id} の再生がブロックされました:`, e));
             }
         }
@@ -251,10 +252,11 @@
         function startQuiz() {
             saveLocalData(); 
             
-            // BGMの再生
             const bgm = document.getElementById('audio-bgm');
-            bgm.volume = 0.3;
-            playAudio('audio-bgm');
+            if (bgm) {
+                bgm.volume = 0.3;
+                playAudio('audio-bgm');
+            }
 
             const rawData = document.getElementById('quizData').value;
             const parsedQuestions = [];
