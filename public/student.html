@@ -107,9 +107,15 @@
         
         let myName = '';
         let myChoice = ''; 
-        let currentRanking = []; // 全員の最新ランキングを保持
+        let currentRanking = [];
 
         function joinRoom() {
+            // エラー検知：サーバーと繋がっていない場合は警告を出す
+            if (typeof io === 'undefined') {
+                alert("サーバーとの通信準備ができていません。画面を更新（リロード）してください。");
+                return;
+            }
+
             const nameInput = document.getElementById('student-name').value.trim();
             if (nameInput === '') {
                 alert('名前を入力してください！');
@@ -177,7 +183,6 @@
                 }
             });
 
-            // ランキングデータを常に最新に保つ
             socket.on('update_ranking', (ranking) => {
                 currentRanking = ranking;
             });
@@ -208,4 +213,45 @@
                 }, 3500);
             });
 
-            // ▼ 全問終了時の
+            socket.on('quiz_finished', () => {
+                document.getElementById('q-num').innerText = "Finish!";
+                document.getElementById('q-text').innerText = "先生の画面で結果発表中...👀";
+                document.getElementById('buzzer-screen').style.display = 'none';
+                
+                let myRank = -1;
+                let myFinalScore = 0;
+                for (let i = 0; i < currentRanking.length; i++) {
+                    if (currentRanking[i].name === myName) {
+                        myRank = i + 1; 
+                        myFinalScore = currentRanking[i].score;
+                        break;
+                    }
+                }
+                
+                setTimeout(() => {
+                    const resultDiv = document.createElement('div');
+                    resultDiv.style.marginTop = '20px';
+                    resultDiv.style.padding = '20px';
+                    resultDiv.style.backgroundColor = '#fff3cd';
+                    resultDiv.style.borderRadius = '15px';
+                    resultDiv.style.border = '3px solid #ffeeba';
+                    resultDiv.style.animation = 'popScale 0.6s ease-out';
+                    
+                    if (myRank > 0) {
+                        resultDiv.innerHTML = `
+                            <h2 style="color:#856404; font-size:1.5rem; margin:0;">あなたは全体で</h2>
+                            <div style="font-size:4.5rem; color:#ff6b6b; font-family:'Fredoka One', cursive; margin:10px 0;">第 ${myRank} 位</div>
+                            <h3 style="color:#856404; margin:0;">(${myFinalScore}点)</h3>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `<h2 style="color:#856404; font-size:1.5rem; margin:0;">参加ありがとうございました！</h2>`;
+                    }
+                    
+                    document.getElementById('question-display').appendChild(resultDiv);
+                    document.getElementById('q-text').innerText = "全問終了しました！";
+                }, 8500); 
+            });
+        }
+    </script>
+</body>
+</html>
