@@ -8,10 +8,10 @@
         body { font-family: 'Noto Sans JP', sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; color: #333; }
         h1 { font-family: 'Fredoka One', cursive; font-size: 3rem; text-align: center; color: #ff6b6b; text-shadow: 2px 2px 0px #ffe6e6; margin-bottom: 10px; }
         
-        /* 準備画面 */
+        /* 準備画面のシンプル化デザイン */
         #lobby { background: white; max-width: 600px; margin: 0 auto; padding: 30px; border-radius: 15px; box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
-        .settings-group { margin-bottom: 15px; font-size: 1.2rem; display: flex; justify-content: space-between; align-items: center;}
-        .settings-group input { width: 80px; padding: 5px; font-size: 1.2rem; text-align: center; border-radius: 5px; border: 1px solid #ccc;}
+        .settings-group { margin-bottom: 15px; font-size: 1.2rem; background: #f8f9fa; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;}
+        .settings-group input { width: 60px; padding: 8px; font-size: 1.2rem; text-align: center; border-radius: 5px; border: 1px solid #ccc; font-weight: bold;}
         .user-badge { display: inline-block; background: #007bff; color: white; padding: 8px 15px; border-radius: 20px; margin: 5px; font-weight: bold; font-size: 1.1rem; }
         
         /* クイズ画面 */
@@ -41,22 +41,29 @@
         /* ランキング画面 */
         #results { text-align: center; }
         .rank-item { background: white; margin: 10px auto; width: 80%; max-width: 500px; padding: 20px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.1); opacity: 0; transform: translateY(50px); animation: popIn 0.5s forwards; }
-        .rank-1 { font-size: 2.5rem; color: #d4af37; background: #fffdf0; border: 3px solid #d4af37;} /* 1位は特別 */
+        .rank-1 { font-size: 2.5rem; color: #d4af37; background: #fffdf0; border: 3px solid #d4af37;}
         @keyframes popIn { to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div id="lobby">
-        <h1>Quiz Settings</h1>
-        <div class="settings-group">正解の基本点: <input type="number" id="setting-base" value="10"></div>
-        <div class="settings-group">早押しの加算点: <input type="number" id="setting-bonus" value="5"></div>
-        <div class="settings-group">加算される人数: <input type="number" id="setting-count" value="1"></div>
+        <h1>Quiz 設定</h1>
+        
+        <div class="settings-group">
+            <span>⭕ 正解した時の基本点数:</span>
+            <span><input type="number" id="setting-base" value="10"> 点</span>
+        </div>
+        
+        <div class="settings-group">
+            <span>⚡ 早く答えた <input type="number" id="setting-count" value="1"> 人には:</span>
+            <span>+<input type="number" id="setting-bonus" value="5"> 点</span>
+        </div>
         
         <h3 style="text-align: center; margin-top: 30px;">参加中の生徒</h3>
         <div id="joined-users" style="text-align: center;">まだ誰もいません...</div>
         
-        <button class="btn-start" onclick="startQuiz()">Start Quiz !!</button>
+        <button class="btn-start" onclick="startQuiz()">クイズをスタート！</button>
     </div>
 
     <div id="quiz-screen" style="display: none;">
@@ -107,7 +114,7 @@
         let isJudged = false;
         let currentRanking = [];
 
-        // --- 準備画面の処理 ---
+        // 準備画面の処理
         socket.on('update_lobby', (names) => {
             const list = document.getElementById('joined-users');
             list.innerHTML = '';
@@ -131,7 +138,7 @@
             document.getElementById('quiz-screen').style.display = 'block';
         }
 
-        // --- クイズ進行の処理 ---
+        // クイズ進行の処理
         socket.on('update_answers_teacher', (answers) => {
             currentAnswers = answers;
             renderAnswers();
@@ -143,7 +150,6 @@
                 list.innerHTML = '';
                 currentAnswers[choice].forEach((name) => {
                     const li = document.createElement('li');
-                    // Revealされるまでは鍵マーク、Reveal後は名前を表示
                     li.textContent = isRevealed ? name : '🔒 (回答済)';
                     li.style.color = isRevealed ? '#333' : '#aaa';
                     list.appendChild(li);
@@ -156,7 +162,6 @@
             renderAnswers();
         }
 
-        // 先生がA~Dのヘッダーをクリックして正解を判定
         function judgeChoice(choice) {
             if (isJudged) {
                 alert('すでに得点を加算済みです。「Next Question」を押してください。');
@@ -170,4 +175,56 @@
             if (confirm(`【 ${choice} 】を正解として得点を加算しますか？`)) {
                 isJudged = true;
                 socket.emit('judge_answer', choice);
-                alert(`正解者（${choice}を選んだ生徒）に得点が加算されました！
+                alert(`正解者に得点が加算されました！`);
+            }
+        }
+
+        function resetQuestion() {
+            socket.emit('reset_question');
+            isRevealed = false;
+            isJudged = false;
+        }
+
+        function nextQuestion() {
+            resetQuestion(); 
+        }
+
+        socket.on('update_ranking', (ranking) => {
+            currentRanking = ranking;
+            if (ranking.length > 0) {
+                document.getElementById('current-leaders').textContent = `現在のトップ: ${ranking[0].name} (${ranking[0].score}点)`;
+            }
+        });
+
+        function finishQuiz() {
+            if(!confirm('クイズを終了して結果発表に移りますか？')) return;
+
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
+            
+            const podium = document.getElementById('podium');
+            podium.innerHTML = '';
+            
+            let top5 = currentRanking.slice(0, 5).reverse(); 
+            let delay = 500; 
+            
+            if(top5.length === 0) {
+                podium.innerHTML = '<h2>まだ誰も得点していません...！</h2>';
+                return;
+            }
+
+            top5.forEach((player, index) => {
+                setTimeout(() => {
+                    let rank = top5.length - index;
+                    let div = document.createElement('div');
+                    div.className = 'rank-item';
+                    if(rank === 1) div.classList.add('rank-1');
+                    div.innerHTML = `第 ${rank} 位: ${player.name} <span style="color:#666; font-size:1rem;">(${player.score}点)</span>`;
+                    podium.appendChild(div);
+                }, delay);
+                delay += 1500;
+            });
+        }
+    </script>
+</body>
+</html>
