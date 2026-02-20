@@ -2,48 +2,172 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>教員用画面 - 早押し状況</title>
+    <title>Quiz Teacher Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: sans-serif; text-align: center; background-color: #f4f4f9; }
-        .container { display: flex; justify-content: space-around; margin-top: 20px; }
-        .choice-box { width: 22%; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h2 { color: #333; border-bottom: 2px solid #ddd; padding-bottom: 5px;}
-        ol { text-align: left; padding-left: 20px; font-size: 1.2rem; font-weight: bold; }
-        button { margin-top: 30px; padding: 15px 30px; font-size: 1.2rem; background-color: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        body { font-family: 'Noto Sans JP', sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; color: #333; }
+        h1 { font-family: 'Fredoka One', cursive; font-size: 3rem; text-align: center; color: #ff6b6b; text-shadow: 2px 2px 0px #ffe6e6; margin-bottom: 10px; }
+        
+        /* 準備画面 */
+        #lobby { background: white; max-width: 600px; margin: 0 auto; padding: 30px; border-radius: 15px; box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+        .settings-group { margin-bottom: 15px; font-size: 1.2rem; display: flex; justify-content: space-between; align-items: center;}
+        .settings-group input { width: 80px; padding: 5px; font-size: 1.2rem; text-align: center; border-radius: 5px; border: 1px solid #ccc;}
+        .user-badge { display: inline-block; background: #007bff; color: white; padding: 8px 15px; border-radius: 20px; margin: 5px; font-weight: bold; font-size: 1.1rem; }
+        
+        /* クイズ画面 */
+        .header-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-weight: bold; font-size: 1.2rem; background: #fff; padding: 10px 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .controls { text-align: center; margin-bottom: 20px; }
+        button { font-family: 'Fredoka One', cursive; font-size: 1.2rem; padding: 10px 20px; margin: 0 5px; border: none; border-radius: 8px; cursor: pointer; color: white; transition: transform 0.1s, opacity 0.2s; }
+        button:hover { transform: translateY(-2px); opacity: 0.9; }
+        button:active { transform: translateY(0); }
+        .btn-start { background-color: #4CAF50; font-size: 1.5rem; width: 100%; margin-top: 20px; padding: 15px; }
+        .btn-reveal { background-color: #9c27b0; }
+        .btn-reset { background-color: #6c757d; }
+        .btn-next { background-color: #007bff; }
+        .btn-finish { background-color: #343a40; display: block; margin: 40px auto; font-size: 1.5rem; }
+
+        /* 選択肢の表示 */
+        .container { display: flex; justify-content: space-around; gap: 10px; }
+        .choice-box { flex: 1; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+        .choice-header { padding: 20px 0; text-align: center; color: white; font-size: 2.5rem; font-family: 'Fredoka One', cursive; cursor: pointer; position: relative;}
+        .choice-header:hover::after { content: '正解にする'; position: absolute; top: 10px; right: 10px; font-size: 1rem; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; font-family: 'Noto Sans JP', sans-serif;}
+        .bg-A { background-color: #e63946; }
+        .bg-B { background-color: #2a9d8f; }
+        .bg-C { background-color: #e9c46a; }
+        .bg-D { background-color: #264653; }
+        ol { padding-left: 20px; margin: 15px; font-size: 1.2rem; font-weight: bold; min-height: 100px;}
+        li { margin-bottom: 8px; border-bottom: 1px dashed #ddd; }
+
+        /* ランキング画面 */
+        #results { text-align: center; }
+        .rank-item { background: white; margin: 10px auto; width: 80%; max-width: 500px; padding: 20px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.1); opacity: 0; transform: translateY(50px); animation: popIn 0.5s forwards; }
+        .rank-1 { font-size: 2.5rem; color: #d4af37; background: #fffdf0; border: 3px solid #d4af37;} /* 1位は特別 */
+        @keyframes popIn { to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-    <h1>解答状況（早い順）</h1>
-    <button onclick="resetQuestion()">次の問題へ（リセット）</button>
-    
-    <div class="container">
-        <div class="choice-box"><h2>A</h2><ol id="list-A"></ol></div>
-        <div class="choice-box"><h2>B</h2><ol id="list-B"></ol></div>
-        <div class="choice-box"><h2>C</h2><ol id="list-C"></ol></div>
-        <div class="choice-box"><h2>D</h2><ol id="list-D"></ol></div>
+
+    <div id="lobby">
+        <h1>Quiz Settings</h1>
+        <div class="settings-group">正解の基本点: <input type="number" id="setting-base" value="10"></div>
+        <div class="settings-group">早押しの加算点: <input type="number" id="setting-bonus" value="5"></div>
+        <div class="settings-group">加算される人数: <input type="number" id="setting-count" value="1"></div>
+        
+        <h3 style="text-align: center; margin-top: 30px;">参加中の生徒</h3>
+        <div id="joined-users" style="text-align: center;">まだ誰もいません...</div>
+        
+        <button class="btn-start" onclick="startQuiz()">Start Quiz !!</button>
+    </div>
+
+    <div id="quiz-screen" style="display: none;">
+        <div class="header-info">
+            <div>💡 正解: <span id="disp-base"></span>点 (先着<span id="disp-count"></span>名に +<span id="disp-bonus"></span>点)</div>
+            <h1>Quiz</h1>
+            <div id="current-leaders" style="font-size: 0.9rem; color: #666;"></div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-reveal" onclick="revealNames()">👀 誰が押したか見る (Reveal)</button>
+            <button class="btn-reset" onclick="resetQuestion()">🔄 同じ問題でやり直し (Reset)</button>
+            <button class="btn-next" onclick="nextQuestion()">➡️ 次の問題へ (Next Question)</button>
+        </div>
+        
+        <div class="container">
+            <div class="choice-box">
+                <div class="choice-header bg-A" onclick="judgeChoice('A')">A</div>
+                <ol id="list-A"></ol>
+            </div>
+            <div class="choice-box">
+                <div class="choice-header bg-B" onclick="judgeChoice('B')">B</div>
+                <ol id="list-B"></ol>
+            </div>
+            <div class="choice-box">
+                <div class="choice-header bg-C" onclick="judgeChoice('C')">C</div>
+                <ol id="list-C"></ol>
+            </div>
+            <div class="choice-box">
+                <div class="choice-header bg-D" onclick="judgeChoice('D')">D</div>
+                <ol id="list-D"></ol>
+            </div>
+        </div>
+
+        <button class="btn-finish" onclick="finishQuiz()">🏁 Finish this quiz</button>
+    </div>
+
+    <div id="results" style="display: none;">
+        <h1>Final Results</h1>
+        <div id="podium"></div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
+        let currentAnswers = { A: [], B: [], C: [], D: [] };
+        let isRevealed = false;
+        let isJudged = false;
+        let currentRanking = [];
 
-        // サーバーからデータを受け取って画面を更新
-        socket.on('update_teacher', (answers) => {
-            ['A', 'B', 'C', 'D'].forEach(choice => {
-                const list = document.getElementById(`list-${choice}`);
-                list.innerHTML = ''; // 一旦クリア
-                answers[choice].forEach(name => {
-                    const li = document.createElement('li');
-                    li.textContent = name;
-                    list.appendChild(li);
-                });
+        // --- 準備画面の処理 ---
+        socket.on('update_lobby', (names) => {
+            const list = document.getElementById('joined-users');
+            list.innerHTML = '';
+            names.forEach(name => {
+                list.innerHTML += `<span class="user-badge">${name}</span>`;
             });
         });
 
-        // リセットボタンを押した時
-        function resetQuestion() {
-            socket.emit('reset_question');
+        function startQuiz() {
+            const base = document.getElementById('setting-base').value;
+            const bonus = document.getElementById('setting-bonus').value;
+            const count = document.getElementById('setting-count').value;
+            
+            socket.emit('update_settings', { basePoints: base, bonusPoints: bonus, bonusCount: count });
+            
+            document.getElementById('disp-base').textContent = base;
+            document.getElementById('disp-bonus').textContent = bonus;
+            document.getElementById('disp-count').textContent = count;
+            
+            document.getElementById('lobby').style.display = 'none';
+            document.getElementById('quiz-screen').style.display = 'block';
         }
-    </script>
-</body>
-</html>
+
+        // --- クイズ進行の処理 ---
+        socket.on('update_answers_teacher', (answers) => {
+            currentAnswers = answers;
+            renderAnswers();
+        });
+
+        function renderAnswers() {
+            ['A', 'B', 'C', 'D'].forEach(choice => {
+                const list = document.getElementById(`list-${choice}`);
+                list.innerHTML = '';
+                currentAnswers[choice].forEach((name) => {
+                    const li = document.createElement('li');
+                    // Revealされるまでは鍵マーク、Reveal後は名前を表示
+                    li.textContent = isRevealed ? name : '🔒 (回答済)';
+                    li.style.color = isRevealed ? '#333' : '#aaa';
+                    list.appendChild(li);
+                });
+            });
+        }
+
+        function revealNames() {
+            isRevealed = true;
+            renderAnswers();
+        }
+
+        // 先生がA~Dのヘッダーをクリックして正解を判定
+        function judgeChoice(choice) {
+            if (isJudged) {
+                alert('すでに得点を加算済みです。「Next Question」を押してください。');
+                return;
+            }
+            if (!isRevealed) {
+                alert('先に「👀 誰が押したか見る」を押して、名前を公開してください！');
+                return;
+            }
+            
+            if (confirm(`【 ${choice} 】を正解として得点を加算しますか？`)) {
+                isJudged = true;
+                socket.emit('judge_answer', choice);
+                alert(`正解者（${choice}を選んだ生徒）に得点が加算されました！
