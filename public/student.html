@@ -2,75 +2,53 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>回答用画面</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>回答用端末</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: sans-serif; text-align: center; background-color: #e9ecef; margin: 0; padding: 20px; }
-        #login-screen, #buzzer-screen { margin-top: 20px; }
-        input[type="text"] { font-size: 1.5rem; padding: 10px; width: 80%; max-width: 300px; margin-bottom: 15px; text-align: center; }
-        .btn-join { font-size: 1.5rem; padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .btn-choice { font-size: 4rem; font-weight: bold; padding: 40px 0; color: white; border: none; border-radius: 15px; cursor: pointer; }
-        .btn-choice:active { opacity: 0.7; }
-        .btn-choice:disabled { background-color: #ccc !important; cursor: not-allowed; }
-        #btn-A { background-color: #e63946; }
-        #btn-B { background-color: #2a9d8f; }
-        #btn-C { background-color: #e9c46a; }
-        #btn-D { background-color: #264653; }
-        #status-msg { font-size: 1.2rem; font-weight: bold; color: #333; margin-top: 15px; }
+        body { font-family: 'Noto Sans JP', sans-serif; text-align: center; background-color: #f0f4f8; margin: 0; padding: 10px; }
+        h2 { color: #333; }
+        
+        /* スコア表示パネル */
+        #score-panel { display: none; background: #fff; border-radius: 10px; padding: 10px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-weight: bold; font-size: 1.2rem;}
+        #my-score { color: #ff6b6b; font-size: 1.8rem; font-family: 'Fredoka One', cursive; margin: 0 5px;}
+
+        /* 入力画面 */
+        #login-screen { margin-top: 50px; }
+        input[type="text"] { font-size: 1.5rem; padding: 15px; width: 80%; max-width: 300px; margin-bottom: 20px; text-align: center; border: 2px solid #ccc; border-radius: 10px; box-sizing: border-box;}
+        .btn-join { font-size: 1.5rem; font-weight: bold; padding: 15px 30px; background-color: #ff6b6b; color: white; border: none; border-radius: 10px; cursor: pointer; width: 80%; max-width: 300px; box-shadow: 0 4px 0px #d9534f;}
+        .btn-join:active { transform: translateY(4px); box-shadow: none; }
+
+        /* ボタン画面 */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
+        .btn-choice { font-family: 'Fredoka One', cursive; font-size: 4rem; padding: 30px 0; color: white; border: none; border-radius: 15px; cursor: pointer; transition: transform 0.1s; box-shadow: 0 6px 0px rgba(0,0,0,0.2);}
+        .btn-choice:active { transform: translateY(6px); box-shadow: none; }
+        .btn-choice:disabled { opacity: 0.5; cursor: not-allowed; transform: translateY(6px); box-shadow: none;}
+        
+        /* 先生の画面と同じ色に統一 */
+        #btn-A { background-color: #e63946; box-shadow: 0 6px 0px #b02a36;}
+        #btn-B { background-color: #2a9d8f; box-shadow: 0 6px 0px #1e756a;}
+        #btn-C { background-color: #e9c46a; box-shadow: 0 6px 0px #bda056;}
+        #btn-D { background-color: #264653; box-shadow: 0 6px 0px #1a2f38;}
+        
+        #status-msg { font-size: 1.2rem; font-weight: bold; color: #555; margin-top: 20px; }
     </style>
 </head>
 <body>
     <div id="login-screen">
-        <h2>名前を入力してください</h2>
-        <input type="text" id="student-name" placeholder="出席番号・名前など">
+        <h2>名前を入力して参加！</h2>
+        <input type="text" id="student-name" placeholder="名前や出席番号">
         <br>
-        <button class="btn-join" onclick="joinRoom()">準備完了</button>
+        <button class="btn-join" onclick="joinRoom()">準備完了！</button>
+    </div>
+
+    <div id="score-panel">
+        <span id="display-name"></span> さんのスコア: <span id="my-score">0</span> 点
     </div>
 
     <div id="buzzer-screen" style="display: none;">
-        <h2 id="display-name"></h2>
-        <div id="status-msg">答えを選んでください</div>
         <div class="grid">
             <button class="btn-choice" id="btn-A" onclick="sendAnswer('A')">A</button>
             <button class="btn-choice" id="btn-B" onclick="sendAnswer('B')">B</button>
             <button class="btn-choice" id="btn-C" onclick="sendAnswer('C')">C</button>
-            <button class="btn-choice" id="btn-D" onclick="sendAnswer('D')">D</button>
-        </div>
-    </div>
-
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-        let myName = '';
-
-        function joinRoom() {
-            const nameInput = document.getElementById('student-name').value.trim();
-            if (nameInput === '') {
-                alert('名前を入力してください！');
-                return;
-            }
-            myName = nameInput;
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('buzzer-screen').style.display = 'block';
-            document.getElementById('display-name').textContent = myName + ' さん';
-        }
-
-        function sendAnswer(choice) {
-            socket.emit('submit_answer', { name: myName, choice: choice });
-            
-            // 押した後はボタンを無効化する
-            const buttons = document.querySelectorAll('.btn-choice');
-            buttons.forEach(btn => btn.disabled = true);
-            document.getElementById('status-msg').textContent = choice + ' を送信しました！待機中...';
-        }
-
-        // 先生がリセットした時の処理
-        socket.on('clear_student', () => {
-            const buttons = document.querySelectorAll('.btn-choice');
-            buttons.forEach(btn => btn.disabled = false);
-            document.getElementById('status-msg').textContent = '次の問題です！答えを選んでください';
-        });
-    </script>
-</body>
-</html>
+            <button class="btn-choice" id="btn-D" onclick="sendAnswer('D')">D
