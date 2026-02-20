@@ -1,130 +1,220 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>単語クイズ - 生徒用</title>
-<script src="/socket.io/socket.io.js"></script>
-<style>
-  body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #e3f2fd; margin: 0; }
-  .container { background: white; padding: 24px; border-radius: 8px; max-width: 400px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-  input[type="text"] { width: 80%; padding: 10px; font-size: 16px; margin-bottom: 20px; text-align: center; }
-  button { padding: 12px 24px; font-size: 18px; cursor: pointer; border: none; border-radius: 4px; background-color: #2196F3; color: white; width: 100%; margin-bottom: 10px; transition: 0.2s;}
-  button:hover { background-color: #1976D2; }
-  button:disabled { background-color: #ccc; cursor: not-allowed; }
-  
-  .choice-btn { background-color: #f5f5f5; color: #333; border: 2px solid #ddd; font-weight: bold; text-align: left; padding-left: 20px;}
-  .choice-btn:hover:not(:disabled) { background-color: #e0e0e0; }
-  
-  #question-screen, #result-message { display: none; }
-  .score-display { font-size: 1.2em; font-weight: bold; color: #FF9800; margin-bottom: 15px; }
-  .status-text { font-size: 1.1em; color: #555; margin: 15px 0; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>回答用端末</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans JP', sans-serif; text-align: center; background-color: #f0f4f8; margin: 0; padding: 10px; }
+        h2 { color: #333; }
+        
+        #score-panel { display: none; background: #fff; border-radius: 10px; padding: 10px; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-weight: bold; font-size: 1.2rem;}
+        #my-score { color: #ff6b6b; font-size: 1.8rem; font-family: 'Fredoka One', cursive; margin: 0 5px;}
+
+        /* 問題文表示エリア */
+        #question-display { display: none; background: #fff; border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        #q-num { color: #007bff; font-weight: bold; font-size: 1rem; margin-bottom: 5px; }
+        #q-text { font-size: 1.2rem; font-weight: bold; color: #333; line-height: 1.4; word-wrap: break-word;}
+
+        #login-screen { margin-top: 50px; }
+        input[type="text"] { font-size: 1.5rem; padding: 15px; width: 80%; max-width: 300px; margin-bottom: 20px; text-align: center; border: 2px solid #ccc; border-radius: 10px; box-sizing: border-box;}
+        .btn-join { font-size: 1.5rem; font-weight: bold; padding: 15px 30px; background-color: #ff6b6b; color: white; border: none; border-radius: 10px; cursor: pointer; width: 80%; max-width: 300px; box-shadow: 0 4px 0px #d9534f;}
+        .btn-join:active { transform: translateY(4px); box-shadow: none; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
+        .btn-choice { font-family: 'Fredoka One', cursive; padding: 15px 5px; color: white; border: none; border-radius: 15px; cursor: pointer; transition: transform 0.1s; box-shadow: 0 6px 0px rgba(0,0,0,0.2); display: flex; flex-direction: column; align-items: center; justify-content: center;}
+        .btn-choice:active { transform: translateY(6px); box-shadow: none; }
+        .btn-choice:disabled { opacity: 0.5; cursor: not-allowed; transform: translateY(6px); box-shadow: none;}
+        
+        /* 選択肢のアルファベットとテキストの調整 */
+        .choice-letter { font-size: 2.5rem; line-height: 1; margin-bottom: 5px; }
+        .choice-text { font-family: 'Noto Sans JP', sans-serif; font-size: 1rem; font-weight: bold; word-break: break-all; padding: 0 5px; line-height: 1.2;}
+
+        #btn-A { background-color: #e63946; box-shadow: 0 6px 0px #b02a36;}
+        #btn-B { background-color: #2a9d8f; box-shadow: 0 6px 0px #1e756a;}
+        #btn-C { background-color: #e9c46a; box-shadow: 0 6px 0px #bda056;}
+        #btn-D { background-color: #264653; box-shadow: 0 6px 0px #1a2f38;}
+        
+        #status-msg { font-size: 1.2rem; font-weight: bold; color: #555; margin-top: 20px; padding: 0 10px;}
+
+        /* 生徒画面の正解・不正解アニメーション */
+        #result-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; flex-direction: column; justify-content: center; align-items: center; color: white; font-family: 'Fredoka One', 'Noto Sans JP', sans-serif; }
+        .result-text { font-size: 4rem; font-weight: bold; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); text-align: center;}
+        .overlay-correct { background: rgba(76, 175, 80, 0.95); }
+        .overlay-wrong { background: rgba(244, 67, 54, 0.95); }
+
+        @keyframes popScale {
+            0% { transform: scale(0.5); opacity: 0; }
+            80% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+        @keyframes shakeScreen {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-15px); }
+            40%, 80% { transform: translateX(15px); }
+        }
+    </style>
 </head>
 <body>
-
-<div class="container" id="login-screen">
-  <h2>English Quiz</h2>
-  <p>名前（ニックネーム）を入力してね</p>
-  <input type="text" id="studentName" placeholder="名前">
-  <button onclick="joinQuiz()">参加する</button>
-</div>
-
-<div class="container" id="question-screen">
-  <div class="score-display">現在のスコア: <span id="my-score">0</span> 点</div>
-  
-  <h3 id="question-info">第 - 問</h3>
-  <h2 id="question-text">先生が問題を送信するまでお待ちください...</h2>
-  
-  <div id="choices-container">
+    <div id="login-screen">
+        <h2>名前を入力して参加！</h2>
+        <input type="text" id="student-name" placeholder="名前や出席番号">
+        <br>
+        <button class="btn-join" onclick="joinRoom()">準備完了！</button>
     </div>
 
-  <div id="result-message" class="status-text"></div>
-</div>
+    <div id="score-panel">
+        <span id="display-name"></span> さんのスコア: <span id="my-score">0</span> 点
+    </div>
 
-<script>
-  const socket = io();
-  let myName = "";
-  const choiceLetters = ["A", "B", "C", "D"];
+    <div id="question-display">
+        <div id="q-num">第 - 問</div>
+        <div id="q-text">先生が問題をスタートするのを待ってね！</div>
+    </div>
 
-  function joinQuiz() {
-    const nameInput = document.getElementById('studentName').value.trim();
-    if (!nameInput) {
-      alert("名前を入力してください！");
-      return;
-    }
-    myName = nameInput;
-    socket.emit('join_game', myName);
-    
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('question-screen').style.display = 'block';
-  }
+    <div id="buzzer-screen" style="display: none;">
+        <div class="grid">
+            <button class="btn-choice" id="btn-A" onclick="sendAnswer('A')">
+                <div class="choice-letter">A</div>
+                <div class="choice-text" id="text-A"></div>
+            </button>
+            <button class="btn-choice" id="btn-B" onclick="sendAnswer('B')">
+                <div class="choice-letter">B</div>
+                <div class="choice-text" id="text-B"></div>
+            </button>
+            <button class="btn-choice" id="btn-C" onclick="sendAnswer('C')">
+                <div class="choice-letter">C</div>
+                <div class="choice-text" id="text-C"></div>
+            </button>
+            <button class="btn-choice" id="btn-D" onclick="sendAnswer('D')">
+                <div class="choice-letter">D</div>
+                <div class="choice-text" id="text-D"></div>
+            </button>
+        </div>
+        <div id="status-msg">先生の問題を聞いて答えを選んでね！</div>
+    </div>
 
-  // 自分のスコア更新
-  socket.on('sync_score', (score) => {
-    document.getElementById('my-score').innerText = score;
-  });
-  
-  // 全員のスコア更新時（自分の分だけ抽出して表示）
-  socket.on('sync_scores_all', (players) => {
-    if (players[myName] !== undefined) {
-      document.getElementById('my-score').innerText = players[myName];
-    }
-  });
+    <div id="result-overlay">
+        <div class="result-text" id="result-display-text"></div>
+    </div>
 
-  // 新しい問題を受信
-  socket.on('new_question', (data) => {
-    document.getElementById('result-message').style.display = 'none';
-    document.getElementById('question-info').innerText = `第 ${data.questionNumber} 問 / 全 ${data.totalQuestions} 問`;
-    document.getElementById('question-text').innerText = data.question;
-    
-    const container = document.getElementById('choices-container');
-    container.innerHTML = ""; 
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket;
+        try {
+            socket = io();
+        } catch (e) {
+            console.error('Socket.ioの読み込みに失敗しました');
+        }
+        
+        let myName = '';
+        let myChoice = ''; 
 
-    data.choices.forEach((choice, index) => {
-      const letter = choiceLetters[index]; // A, B, C, D
-      const btn = document.createElement('button');
-      btn.className = "choice-btn";
-      btn.innerText = `${letter}: ${choice}`;
-      btn.onclick = () => submitAnswer(letter);
-      container.appendChild(btn);
-    });
-  });
+        function joinRoom() {
+            const nameInput = document.getElementById('student-name').value.trim();
+            if (nameInput === '') {
+                alert('名前を入力してください！');
+                return;
+            }
+            
+            const emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐧', '🐤', '🦉', '🦄', '🐝', '🐢', '🐙', '🐬'];
+            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+            
+            myName = randomEmoji + ' ' + nameInput;
+            
+            if (socket) {
+                socket.emit('join_game', myName); 
+            }
 
-  // 解答を送信
-  function submitAnswer(letter) {
-    socket.emit('submit_answer', { name: myName, choice: letter });
-    
-    // ボタンを無効化して連打防止
-    const buttons = document.querySelectorAll('.choice-btn');
-    buttons.forEach(btn => btn.disabled = true);
-    
-    const msg = document.getElementById('result-message');
-    msg.innerText = `「${letter}」を送信しました！結果を待っています...`;
-    msg.style.display = 'block';
-  }
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('score-panel').style.display = 'block';
+            document.getElementById('question-display').style.display = 'block';
+            document.getElementById('buzzer-screen').style.display = 'block';
+            document.getElementById('display-name').textContent = myName;
+        }
 
-  // 正解発表を受信
-  socket.on('result_announced', (correctChoice) => {
-    const msg = document.getElementById('result-message');
-    msg.innerHTML = `<span style="color:red; font-size:1.2em; font-weight:bold;">正解は「${correctChoice}」でした！</span>`;
-  });
+        function sendAnswer(choice) {
+            myChoice = choice; 
+            if (socket) {
+                socket.emit('submit_answer', { name: myName, choice: choice });
+            }
+            
+            const buttons = document.querySelectorAll('.btn-choice');
+            buttons.forEach(btn => btn.disabled = true);
+            document.getElementById('status-msg').textContent = '【 ' + choice + ' 】を送信しました！先生の発表を待ってね。';
+        }
 
-  // 画面リセット（必要に応じて）
-  socket.on('clear_student', () => {
-    const buttons = document.querySelectorAll('.choice-btn');
-    buttons.forEach(btn => btn.disabled = false);
-    document.getElementById('result-message').style.display = 'none';
-  });
-  
-  // 全問終了
-  socket.on('quiz_finished', () => {
-    document.getElementById('question-info').innerText = "クイズ終了！";
-    document.getElementById('question-text').innerText = "全問終了しました。先生の画面を見てね！";
-    document.getElementById('choices-container').innerHTML = "";
-    document.getElementById('result-message').style.display = 'none';
-  });
-</script>
+        if (socket) {
+            // 新しい問題を受信したときの処理
+            socket.on('new_question', (data) => {
+                document.getElementById('q-num').innerText = `第 ${data.questionNumber} 問 / 全 ${data.totalQuestions} 問`;
+                document.getElementById('q-text').innerText = data.question;
+                
+                const letters = ['A', 'B', 'C', 'D'];
+                data.choices.forEach((choice, index) => {
+                    document.getElementById(`text-${letters[index]}`).innerText = choice;
+                });
+                
+                document.getElementById('status-msg').textContent = '答えを選んでね！';
+                
+                // ボタンの有効化と記憶のリセット
+                myChoice = ''; 
+                const buttons = document.querySelectorAll('.btn-choice');
+                buttons.forEach(btn => btn.disabled = false);
+            });
 
+            // 教員側からリセットがかかった場合
+            socket.on('clear_student', () => {
+                myChoice = ''; 
+                const buttons = document.querySelectorAll('.btn-choice');
+                buttons.forEach(btn => btn.disabled = false);
+                document.getElementById('status-msg').textContent = 'もう一度答えを選んでね！';
+            });
+
+            socket.on('sync_score', (score) => {
+                document.getElementById('my-score').textContent = score;
+            });
+
+            socket.on('sync_scores_all', (players) => {
+                if (players[myName] !== undefined) {
+                    document.getElementById('my-score').textContent = players[myName];
+                }
+            });
+
+            socket.on('result_announced', (correctChoice) => {
+                document.getElementById('status-msg').textContent = '次の質問に行くまでまってね。';
+                
+                const overlay = document.getElementById('result-overlay');
+                const text = document.getElementById('result-display-text');
+                overlay.style.display = 'flex';
+                
+                if (myChoice === correctChoice) {
+                    overlay.className = 'overlay-correct';
+                    text.innerHTML = '⭕️<br>正解！！';
+                    text.style.animation = 'popScale 0.6s ease-out';
+                } else if (myChoice === '') {
+                    overlay.className = 'overlay-wrong';
+                    text.innerHTML = '⏳<br>時間切れ...';
+                    text.style.animation = 'shakeScreen 0.5s';
+                } else {
+                    overlay.className = 'overlay-wrong';
+                    text.innerHTML = '❌<br>残念...';
+                    text.style.animation = 'shakeScreen 0.5s';
+                }
+                
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 3500);
+            });
+
+            // 全問終了時の処理
+            socket.on('quiz_finished', () => {
+                document.getElementById('q-num').innerText = "Finish!";
+                document.getElementById('q-text').innerText = "全問終了しました！先生の画面を見てね👀";
+                document.getElementById('buzzer-screen').style.display = 'none';
+            });
+        }
+    </script>
 </body>
 </html>
