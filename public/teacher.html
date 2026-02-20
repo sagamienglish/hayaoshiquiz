@@ -1,283 +1,217 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <title>Quiz Teacher Panel</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Noto Sans JP', sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; color: #333; }
-        h1 { font-family: 'Fredoka One', cursive; font-size: 3rem; text-align: center; color: #ff6b6b; text-shadow: 2px 2px 0px #ffe6e6; margin: 0; padding: 0;}
-        
-        #lobby { background: white; max-width: 600px; margin: 0 auto; padding: 30px; border-radius: 15px; box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
-        .settings-group { margin-bottom: 15px; font-size: 1.2rem; background: #f8f9fa; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;}
-        .settings-group input { width: 60px; padding: 8px; font-size: 1.2rem; text-align: center; border-radius: 5px; border: 1px solid #ccc; font-weight: bold;}
-        .user-badge { display: inline-block; background: #007bff; color: white; padding: 8px 15px; border-radius: 20px; margin: 5px; font-weight: bold; font-size: 1.1rem; }
-        
-        .qr-section { text-align: center; margin: 25px 0; padding: 15px; background: #e9ecef; border-radius: 10px; }
-        .qr-section img { border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 10px; }
-        
-        /* トップのヘッダー情報（文字を小さく、入力可能に） */
-        .header-info { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; background: #fff; padding: 10px 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .score-settings-inline { font-size: 0.85rem; color: #555; display: flex; align-items: center; gap: 5px; background: #f8f9fa; padding: 5px 10px; border-radius: 5px; border: 1px solid #ddd; font-weight: bold;}
-        .score-settings-inline input { width: 40px; padding: 3px; font-size: 0.85rem; text-align: center; border: 1px solid #ccc; border-radius: 3px; font-weight: bold; background: white;}
-        
-        /* Top 5 表示 */
-        #current-leaders { font-size: 0.9rem; color: #444; text-align: right; line-height: 1.4; font-weight: bold;}
-        .leader-title { font-size: 1rem; color: #000; margin-bottom: 5px; border-bottom: 2px solid #ccc; text-align: right;}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>教員用スタート画面</title>
+<style>
+  body { 
+    font-family: sans-serif; 
+    padding: 20px; 
+    background-color: #f0f2f5; 
+  }
+  .container { 
+    background: white; 
+    padding: 24px; 
+    border-radius: 8px; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+    max-width: 600px; 
+    position: relative; /* 設定ボタンの配置基準 */
+  }
+  .section { 
+    margin-bottom: 24px; 
+  }
+  
+  /* トップ画面のヘッダー部分 */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+  }
+  .header h2 { margin: 0; }
+  
+  /* 設定ボタン */
+  .btn-settings {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+  }
+  .btn-settings:hover { background-color: #45a049; }
 
-        .controls { text-align: center; margin-bottom: 20px; }
-        button { font-family: 'Fredoka One', cursive; font-size: 1.2rem; padding: 10px 20px; margin: 0 5px; border: none; border-radius: 8px; cursor: pointer; color: white; transition: transform 0.1s, opacity 0.2s; }
-        button:hover { transform: translateY(-2px); opacity: 0.9; }
-        button:active { transform: translateY(0); }
-        .btn-start { background-color: #4CAF50; font-size: 1.5rem; width: 100%; margin-top: 20px; padding: 15px; }
-        .btn-reveal { background-color: #9c27b0; }
-        .btn-reset { background-color: #6c757d; }
-        .btn-next { background-color: #007bff; }
-        .btn-finish { background-color: #343a40; display: block; margin: 40px auto; font-size: 1.5rem; }
+  /* スコア設定（コンパクト） */
+  .score-settings { 
+    display: flex; 
+    align-items: center; 
+    gap: 16px; 
+    background: #f9f9f9;
+    padding: 12px;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+  }
+  .score-settings label { margin: 0; }
+  .score-settings input { width: 60px; padding: 4px; margin-left: 4px; }
+  
+  /* QRコード */
+  .qr-thumbnail { 
+    width: 120px; 
+    cursor: pointer; 
+    border: 1px solid #ddd; 
+    border-radius: 4px;
+    transition: 0.2s; 
+  }
+  .qr-thumbnail:hover { opacity: 0.8; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  
+  /* モーダル共通設定（QR用＆設定用） */
+  .modal-overlay { 
+    display: none; 
+    position: fixed; 
+    top: 0; left: 0; 
+    width: 100%; height: 100%; 
+    background: rgba(0,0,0,0.6); 
+    justify-content: center; 
+    align-items: center; 
+    z-index: 1000; 
+  }
+  .modal-overlay.active { display: flex; }
+  
+  /* 設定用モーダルの中身 */
+  .settings-modal {
+    background: white;
+    padding: 24px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 700px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  .settings-modal textarea {
+    width: 100%;
+    height: 200px;
+    margin-top: 12px;
+    padding: 8px;
+    box-sizing: border-box;
+    font-family: monospace;
+    white-space: pre;
+  }
+  .btn-download {
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+  .btn-download:hover { background-color: #1976D2; }
+  .btn-close {
+    background-color: #666;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 12px;
+  }
 
-        .container { display: flex; justify-content: space-around; gap: 10px; }
-        .choice-box { flex: 1; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
-        .choice-header { padding: 20px 0; text-align: center; color: white; font-size: 2.5rem; font-family: 'Fredoka One', cursive; cursor: pointer; position: relative;}
-        .choice-header:hover::after { content: '正解にする'; position: absolute; top: 10px; right: 10px; font-size: 1rem; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; font-family: 'Noto Sans JP', sans-serif;}
-        .bg-A { background-color: #e63946; }
-        .bg-B { background-color: #2a9d8f; }
-        .bg-C { background-color: #e9c46a; }
-        .bg-D { background-color: #264653; }
-        ol { padding-left: 20px; margin: 15px; font-size: 1.2rem; font-weight: bold; min-height: 100px;}
-        li { margin-bottom: 8px; border-bottom: 1px dashed #ddd; }
-
-        /* 教員画面の正解アニメーション */
-        #correct-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; flex-direction: column; justify-content: center; align-items: center; }
-        .correct-text { color: #ffeb3b; font-size: 7rem; font-family: 'Fredoka One', cursive; text-shadow: 4px 4px 0px #ff9800; animation: popZoom 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        .correct-close { margin-top: 40px; font-size: 1.5rem; padding: 15px 40px; background: white; color: black; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 0px #ccc; }
-        @keyframes popZoom {
-            0% { transform: scale(0.1) rotate(-10deg); opacity: 0; }
-            100% { transform: scale(1) rotate(0deg); opacity: 1; }
-        }
-
-        #results { text-align: center; }
-        .rank-item { background: white; margin: 10px auto; width: 80%; max-width: 500px; padding: 20px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.1); opacity: 0; transform: translateY(50px); animation: popIn 0.5s forwards; }
-        .rank-1 { font-size: 2.5rem; color: #d4af37; background: #fffdf0; border: 3px solid #d4af37;}
-        @keyframes popIn { to { opacity: 1; transform: translateY(0); } }
-    </style>
+  /* QR用モーダルの中身 */
+  .qr-large { 
+    width: 80vw; 
+    max-width: 500px; 
+    background: white; 
+    padding: 20px; 
+    border-radius: 8px; 
+    cursor: pointer;
+  }
+</style>
 </head>
 <body>
 
-    <div id="lobby">
-        <h1>Quiz 設定</h1>
-        <div class="settings-group">
-            <span>⭕ 正解した時の基本点数:</span>
-            <span><input type="number" id="setting-base" value="10"> 点</span>
-        </div>
-        <div class="settings-group">
-            <span>⚡ 早く答えた <input type="number" id="setting-count" value="1"> 人には:</span>
-            <span>+<input type="number" id="setting-bonus" value="5"> 点</span>
-        </div>
+<div class="container">
+  <div class="header">
+    <h2>Lesson 1 Vocabulary</h2>
+    <button class="btn-settings" onclick="toggleModal('settingsModal')">⚙️ 問題設定</button>
+  </div>
 
-        <div class="qr-section">
-            <p style="font-weight: bold; margin: 0;">👇 生徒用 参加QRコード 👇</p>
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://hayaoshiquiz.onrender.com/student.html" alt="QR Code">
-            <p style="font-size: 0.9rem; margin-top: 5px; color: #666;">https://hayaoshiquiz.onrender.com/student.html</p>
-        </div>
-        
-        <h3 style="text-align: center; margin-top: 20px;">参加中の生徒</h3>
-        <div id="joined-users" style="text-align: center;">まだ誰もいません...</div>
-        
-        <button class="btn-start" onclick="startQuiz()">クイズをスタート！</button>
+  <div class="section">
+    <label><b>モード設定:</b></label>
+    <select disabled style="padding: 4px 8px; font-size: 16px;">
+      <option selected>Quizのみ</option>
+    </select>
+  </div>
+
+  <div class="section">
+    <label><b>スコア設定:</b></label>
+    <div class="score-settings">
+      <label>配点: <input type="number" value="10"></label>
+      <label>合格点: <input type="number" value="8"></label>
+      <label>制限時間: <input type="number" value="60"> 秒</label>
     </div>
+  </div>
 
-    <div id="quiz-screen" style="display: none;">
-        <div class="header-info">
-            <div class="score-settings-inline">
-                💡 今回の正解: <input type="number" id="inline-base">点<br>
-                (先着 <input type="number" id="inline-count">名に +<input type="number" id="inline-bonus">点)
-            </div>
-            <h1>Quiz</h1>
-            <div>
-                <div class="leader-title">🏆 Top 5</div>
-                <div id="current-leaders">まだ得点はありません</div>
-            </div>
-        </div>
+  <div class="section">
+    <label><b>生徒用アクセスQRコード:</b></label>
+    <p style="font-size: 0.85em; color: #666; margin-top: 4px;">（画像をクリックすると拡大表示されます）</p>
+    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=ExampleData" class="qr-thumbnail" onclick="toggleModal('qrModal')" alt="縮小版QRコード">
+  </div>
+</div>
 
-        <div class="controls">
-            <button class="btn-reveal" onclick="revealNames()">👀 誰が押したか見る (Reveal)</button>
-            <button class="btn-reset" onclick="resetQuestion()">🔄 同じ問題でやり直し (Reset)</button>
-            <button class="btn-next" onclick="nextQuestion()">➡️ 次の問題へ (Next Question)</button>
-        </div>
-        
-        <div class="container">
-            <div class="choice-box">
-                <div class="choice-header bg-A" onclick="judgeChoice('A')">A</div>
-                <ol id="list-A"></ol>
-            </div>
-            <div class="choice-box">
-                <div class="choice-header bg-B" onclick="judgeChoice('B')">B</div>
-                <ol id="list-B"></ol>
-            </div>
-            <div class="choice-box">
-                <div class="choice-header bg-C" onclick="judgeChoice('C')">C</div>
-                <ol id="list-C"></ol>
-            </div>
-            <div class="choice-box">
-                <div class="choice-header bg-D" onclick="judgeChoice('D')">D</div>
-                <ol id="list-D"></ol>
-            </div>
-        </div>
-
-        <button class="btn-finish" onclick="finishQuiz()">🏁 Finish this quiz</button>
+<div class="modal-overlay" id="settingsModal">
+  <div class="settings-modal">
+    <h3>問題データの登録</h3>
+    <p style="font-size: 0.9em; color: #555;">
+      Excel等から「問題・選択肢1〜4・正解番号」の順に並んだデータをコピーし、下の枠に貼り付けてください。
+    </p>
+    
+    <button class="btn-download" onclick="downloadTemplate()">⬇️ Excel用テンプレート(CSV)をダウンロード</button>
+    
+    <textarea id="quizData" placeholder="例:&#10;apple&#9;りんご&#9;みかん&#9;ばなな&#9;ぶどう&#9;1&#10;grape&#9;りんご&#9;みかん&#9;ばなな&#9;ぶどう&#9;4"></textarea>
+    
+    <div style="text-align: right;">
+      <button class="btn-close" onclick="toggleModal('settingsModal')">保存して閉じる</button>
     </div>
+  </div>
+</div>
 
-    <div id="correct-overlay">
-        <div class="correct-text" id="correct-display-text">正解は A！</div>
-        <button class="correct-close" onclick="closeOverlay()">画面を戻す</button>
-    </div>
+<div class="modal-overlay" id="qrModal" onclick="toggleModal('qrModal')">
+  <img src="https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=ExampleData" class="qr-large" alt="拡大版QRコード">
+  <p style="color: white; position: absolute; bottom: 10%; font-size: 1.2em; pointer-events: none;">クリックで元に戻る</p>
+</div>
 
-    <div id="results" style="display: none;">
-        <h1>Final Results</h1>
-        <div id="podium"></div>
-    </div>
+<script>
+  // モーダルの開閉を管理する関数
+  function toggleModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.classList.toggle('active');
+  }
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-        let currentAnswers = { A: [], B: [], C: [], D: [] };
-        let isRevealed = false;
-        let isJudged = false;
-        let currentRanking = [];
+  // CSVテンプレートを動的に生成してダウンロードさせる関数
+  function downloadTemplate() {
+    // 先生が使いやすいように、英語の語彙テストを想定したダミーデータを入力しています
+    const csvHeader = "問題,選択肢1,選択肢2,選択肢3,選択肢4,正解番号\n";
+    const sampleData = "apple,りんご,みかん,ばなな,ぶどう,1\nbeautiful,美しい,悲しい,大きい,小さい,1\n";
+    
+    // Excelで文字化けしないようにBOM（Byte Order Mark）を付与
+    const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+    const blob = new Blob([bom, csvHeader + sampleData], { type: 'text/csv;charset=utf-8;' });
+    
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "QuizTemplate.csv"; // ダウンロードされるファイル名
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+</script>
 
-        socket.on('update_lobby', (names) => {
-            const list = document.getElementById('joined-users');
-            list.innerHTML = '';
-            names.forEach(name => {
-                list.innerHTML += `<span class="user-badge">${name}</span>`;
-            });
-        });
-
-        function startQuiz() {
-            const base = document.getElementById('setting-base').value;
-            const bonus = document.getElementById('setting-bonus').value;
-            const count = document.getElementById('setting-count').value;
-            
-            socket.emit('update_settings', { basePoints: base, bonusPoints: bonus, bonusCount: count });
-            
-            // クイズ画面の左上の小さな入力欄に設定値を移す
-            document.getElementById('inline-base').value = base;
-            document.getElementById('inline-bonus').value = bonus;
-            document.getElementById('inline-count').value = count;
-            
-            document.getElementById('lobby').style.display = 'none';
-            document.getElementById('quiz-screen').style.display = 'block';
-        }
-
-        socket.on('update_answers_teacher', (answers) => {
-            currentAnswers = answers;
-            renderAnswers();
-        });
-
-        function renderAnswers() {
-            ['A', 'B', 'C', 'D'].forEach(choice => {
-                const list = document.getElementById(`list-${choice}`);
-                list.innerHTML = '';
-                currentAnswers[choice].forEach((name) => {
-                    const li = document.createElement('li');
-                    li.textContent = isRevealed ? name : '🔒 (回答済)';
-                    li.style.color = isRevealed ? '#333' : '#aaa';
-                    list.appendChild(li);
-                });
-            });
-        }
-
-        function revealNames() {
-            isRevealed = true;
-            renderAnswers();
-        }
-
-        function judgeChoice(choice) {
-            if (isJudged) return; 
-            if (!isRevealed) {
-                alert('先に「👀 誰が押したか見る」を押して、名前を公開してください！');
-                return;
-            }
-            isJudged = true;
-            
-            // 教員画面の左上の「現在の入力値」を取得してサーバーに送る
-            const currentBase = document.getElementById('inline-base').value;
-            const currentBonus = document.getElementById('inline-bonus').value;
-            const currentCount = document.getElementById('inline-count').value;
-
-            socket.emit('judge_answer', { 
-                choice: choice, 
-                currentSettings: { basePoints: currentBase, bonusPoints: currentBonus, bonusCount: currentCount } 
-            });
-
-            // 派手なアニメーションを表示
-            const overlay = document.getElementById('correct-overlay');
-            const text = document.getElementById('correct-display-text');
-            text.textContent = `正解は ${choice} ！！`;
-            overlay.style.display = 'flex';
-        }
-
-        function closeOverlay() {
-            document.getElementById('correct-overlay').style.display = 'none';
-        }
-
-        function resetQuestion() {
-            socket.emit('reset_question');
-            isRevealed = false;
-            isJudged = false;
-        }
-
-        function nextQuestion() {
-            resetQuestion(); 
-        }
-
-        // トップ5の表示処理
-        socket.on('update_ranking', (ranking) => {
-            currentRanking = ranking;
-            const leadersDiv = document.getElementById('current-leaders');
-            leadersDiv.innerHTML = '';
-            
-            if (ranking.length === 0) {
-                leadersDiv.innerHTML = 'まだ得点はありません';
-                return;
-            }
-            
-            // 最大5人まで表示
-            let limit = Math.min(ranking.length, 5);
-            for(let i = 0; i < limit; i++) {
-                leadersDiv.innerHTML += `<div>${i+1}位: ${ranking[i].name} (${ranking[i].score}点)</div>`;
-            }
-        });
-
-        function finishQuiz() {
-            if(!confirm('クイズを終了して結果発表に移りますか？')) return;
-
-            document.getElementById('quiz-screen').style.display = 'none';
-            document.getElementById('results').style.display = 'block';
-            
-            const podium = document.getElementById('podium');
-            podium.innerHTML = '';
-            
-            let top5 = currentRanking.slice(0, 5).reverse(); 
-            let delay = 500; 
-            
-            if(top5.length === 0) {
-                podium.innerHTML = '<h2>まだ誰も得点していません...！</h2>';
-                return;
-            }
-
-            top5.forEach((player, index) => {
-                setTimeout(() => {
-                    let rank = top5.length - index;
-                    let div = document.createElement('div');
-                    div.className = 'rank-item';
-                    if(rank === 1) div.classList.add('rank-1');
-                    div.innerHTML = `第 ${rank} 位: ${player.name} <span style="color:#666; font-size:1rem;">(${player.score}点)</span>`;
-                    podium.prepend(div);
-                }, delay);
-                delay += 1000;
-            });
-        }
-    </script>
 </body>
 </html>
