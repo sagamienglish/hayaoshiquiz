@@ -193,6 +193,7 @@
         let isJudged = false;
         let currentRanking = [];
         let currentCorrectAnswer = ""; 
+        let totalPlayers = 0; // ▼ 全体の参加人数を把握するための変数
         const choiceLetters = ["A", "B", "C", "D"];
 
         function playAudio(id) {
@@ -234,6 +235,7 @@
         }
 
         socket.on('update_lobby', (names) => {
+            totalPlayers = names.length; // ▼ 現在の参加人数を更新
             const list = document.getElementById('joined-users');
             list.innerHTML = '';
             names.forEach(name => {
@@ -246,7 +248,7 @@
             
             const bgm = document.getElementById('audio-bgm');
             if (bgm) {
-                bgm.volume = 0.2; // ▼ 音量を20%に調整
+                bgm.volume = 0.2; 
                 playAudio('audio-bgm');
             }
 
@@ -303,9 +305,37 @@
             });
         });
 
+        // ▼ 全員回答を検知して自動で進行する機能を追加
         socket.on('update_answers_teacher', (answers) => {
             currentAnswers = answers;
             renderAnswers();
+
+            // 現在回答した人数の合計を計算
+            let totalAnswers = answers.A.length + answers.B.length + answers.C.length + answers.D.length;
+            
+            // 参加者が1人以上いて、全員が回答済みの場合
+            if (totalPlayers > 0 && totalAnswers === totalPlayers && !isJudged) {
+                // 正解が設定されている（Excelデータがある）場合のみ自動進行する
+                if (currentCorrectAnswer !== "") {
+                    
+                    // 最後の人が答えてから「1秒」のタメを作る
+                    setTimeout(() => {
+                        // 待っている間に先生が手動でボタンを押していなければ進行
+                        if (!isJudged) {
+                            if (!isRevealed) {
+                                revealNames(); // 回答者をオープン！
+                            }
+                            
+                            // オープンしてから「1.5秒後」に正解発表！
+                            setTimeout(() => {
+                                if (!isJudged) {
+                                    autoJudge();
+                                }
+                            }, 1500); 
+                        }
+                    }, 1000);
+                }
+            }
         });
 
         function renderAnswers() {
@@ -390,13 +420,11 @@
             }
         });
 
-        // サーバーから「最後の問題の次へ」が押された際の終了アナウンスを受信
         socket.on('quiz_finished', () => {
             alert("全問題が終了しました！結果発表に移ります。");
-            finishQuiz(true); // 自動的に結果発表へ
+            finishQuiz(true); 
         });
 
-        // 結果発表の演出（アニメーションと効果音を連動）
         function finishQuiz(isAuto = false) {
             if(!isAuto && !confirm('クイズを終了して結果発表に移りますか？')) return;
 
@@ -410,7 +438,7 @@
             podium.innerHTML = '';
             
             let top5 = currentRanking.slice(0, 5).reverse(); 
-            let delay = 1000; // 最初の発表までのタメ
+            let delay = 1000; 
             
             if(top5.length === 0) {
                 podium.innerHTML = '<h2>まだ誰も得点していません...！</h2>';
@@ -426,10 +454,9 @@
                     div.innerHTML = `第 ${rank} 位: ${player.name} <span style="color:#666; font-size:1rem;">(${player.score}点)</span>`;
                     podium.prepend(div);
                     
-                    // ▼ 順位が出るごとに ranking.mp3 を再生
                     playAudio('audio-ranking');
                 }, delay);
-                delay += 1500; // 1.5秒間隔でじらしながら発表
+                delay += 1500; 
             });
         }
     </script>
