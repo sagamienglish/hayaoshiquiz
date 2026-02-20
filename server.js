@@ -8,26 +8,22 @@ const io = new Server(server);
 
 app.use(express.static('public'));
 
-// ゲームの状態管理
-let players = {}; // { "山田": 10, "佐藤": 15 } のようにスコアを記録
+let players = {}; 
 let answers = { A: [], B: [], C: [], D: [] };
 let answeredUsers = new Set();
 let settings = { basePoints: 10, bonusPoints: 5, bonusCount: 1 };
 
 io.on('connection', (socket) => {
-    // 生徒が参加した時
     socket.on('join_game', (name) => {
-        if (!players[name]) Object.assign(players, { [name]: 0 }); // 新規参加なら0点
-        io.emit('update_lobby', Object.keys(players)); // 教員の準備画面を更新
-        socket.emit('sync_score', players[name]);      // 生徒に現在のスコアを送信
+        if (!players[name]) Object.assign(players, { [name]: 0 }); 
+        io.emit('update_lobby', Object.keys(players)); 
+        socket.emit('sync_score', players[name]);      
     });
 
-    // 教員が設定を保存してスタートした時
     socket.on('update_settings', (newSettings) => {
         settings = newSettings;
     });
 
-    // 生徒が回答を送信した時
     socket.on('submit_answer', (data) => {
         if (!answeredUsers.has(data.name)) {
             answeredUsers.add(data.name);
@@ -36,24 +32,28 @@ io.on('connection', (socket) => {
         }
     });
 
-    // 教員が正解を発表し、得点を加算する時
-    socket.on('judge_answer', (correctChoice) => {
+    // ▼変更点：点数を問題ごとに計算し、正解を生徒に発表する
+    socket.on('judge_answer', (data) => {
+        const correctChoice = data.choice;
+        const currentSettings = data.currentSettings;
+
         let correctNames = answers[correctChoice] || [];
         correctNames.forEach((name, index) => {
-            let points = Number(settings.basePoints);
-            // 指定人数以内ならボーナス点追加
-            if (index < Number(settings.bonusCount)) {
-                points += Number(settings.bonusPoints);
+            let points = Number(currentSettings.basePoints);
+            if (index < Number(currentSettings.bonusCount)) {
+                points += Number(currentSettings.bonusPoints);
             }
             if(players[name] !== undefined) {
                 players[name] += points;
             }
         });
-        io.emit('sync_scores_all', players); // 全員のスコアを更新
-        io.emit('update_ranking', getRanking()); // 最新のランキングを教員へ
+        io.emit('sync_scores_all', players); 
+        io.emit('update_ranking', getRanking()); 
+        
+        // 生徒全員に「正解はこれだよ！」と送信
+        io.emit('result_announced', correctChoice);
     });
 
-    // 次の問題・リセット
     socket.on('reset_question', () => {
         answers = { A: [], B: [], C: [], D: [] };
         answeredUsers.clear();
@@ -62,11 +62,10 @@ io.on('connection', (socket) => {
     });
 });
 
-// ランキングを作成する関数
 function getRanking() {
     return Object.entries(players)
         .map(([name, score]) => ({ name, score }))
-        .sort((a, b) => b.score - a.score); // スコア順に並び替え
+        .sort((a, b) => b.score - a.score);
 }
 
 const PORT = process.env.PORT || 3000;
