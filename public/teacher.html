@@ -8,13 +8,15 @@
         body { font-family: 'Noto Sans JP', sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; color: #333; }
         h1 { font-family: 'Fredoka One', cursive; font-size: 3rem; text-align: center; color: #ff6b6b; text-shadow: 2px 2px 0px #ffe6e6; margin-bottom: 10px; }
         
-        /* 準備画面のシンプル化デザイン */
         #lobby { background: white; max-width: 600px; margin: 0 auto; padding: 30px; border-radius: 15px; box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
         .settings-group { margin-bottom: 15px; font-size: 1.2rem; background: #f8f9fa; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;}
         .settings-group input { width: 60px; padding: 8px; font-size: 1.2rem; text-align: center; border-radius: 5px; border: 1px solid #ccc; font-weight: bold;}
         .user-badge { display: inline-block; background: #007bff; color: white; padding: 8px 15px; border-radius: 20px; margin: 5px; font-weight: bold; font-size: 1.1rem; }
         
-        /* クイズ画面 */
+        /* QRコード部分のスタイル */
+        .qr-section { text-align: center; margin: 25px 0; padding: 15px; background: #e9ecef; border-radius: 10px; }
+        .qr-section img { border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 10px; }
+        
         .header-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-weight: bold; font-size: 1.2rem; background: #fff; padding: 10px 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .controls { text-align: center; margin-bottom: 20px; }
         button { font-family: 'Fredoka One', cursive; font-size: 1.2rem; padding: 10px 20px; margin: 0 5px; border: none; border-radius: 8px; cursor: pointer; color: white; transition: transform 0.1s, opacity 0.2s; }
@@ -26,7 +28,6 @@
         .btn-next { background-color: #007bff; }
         .btn-finish { background-color: #343a40; display: block; margin: 40px auto; font-size: 1.5rem; }
 
-        /* 選択肢の表示 */
         .container { display: flex; justify-content: space-around; gap: 10px; }
         .choice-box { flex: 1; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
         .choice-header { padding: 20px 0; text-align: center; color: white; font-size: 2.5rem; font-family: 'Fredoka One', cursive; cursor: pointer; position: relative;}
@@ -38,7 +39,6 @@
         ol { padding-left: 20px; margin: 15px; font-size: 1.2rem; font-weight: bold; min-height: 100px;}
         li { margin-bottom: 8px; border-bottom: 1px dashed #ddd; }
 
-        /* ランキング画面 */
         #results { text-align: center; }
         .rank-item { background: white; margin: 10px auto; width: 80%; max-width: 500px; padding: 20px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.1); opacity: 0; transform: translateY(50px); animation: popIn 0.5s forwards; }
         .rank-1 { font-size: 2.5rem; color: #d4af37; background: #fffdf0; border: 3px solid #d4af37;}
@@ -59,8 +59,14 @@
             <span>⚡ 早く答えた <input type="number" id="setting-count" value="1"> 人には:</span>
             <span>+<input type="number" id="setting-bonus" value="5"> 点</span>
         </div>
+
+        <div class="qr-section">
+            <p style="font-weight: bold; margin: 0;">👇 生徒用 参加QRコード 👇</p>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://hayaoshiquiz.onrender.com/student.html" alt="QR Code">
+            <p style="font-size: 0.9rem; margin-top: 5px; color: #666;">https://hayaoshiquiz.onrender.com/student.html</p>
+        </div>
         
-        <h3 style="text-align: center; margin-top: 30px;">参加中の生徒</h3>
+        <h3 style="text-align: center; margin-top: 20px;">参加中の生徒</h3>
         <div id="joined-users" style="text-align: center;">まだ誰もいません...</div>
         
         <button class="btn-start" onclick="startQuiz()">クイズをスタート！</button>
@@ -114,7 +120,6 @@
         let isJudged = false;
         let currentRanking = [];
 
-        // 準備画面の処理
         socket.on('update_lobby', (names) => {
             const list = document.getElementById('joined-users');
             list.innerHTML = '';
@@ -138,7 +143,6 @@
             document.getElementById('quiz-screen').style.display = 'block';
         }
 
-        // クイズ進行の処理
         socket.on('update_answers_teacher', (answers) => {
             currentAnswers = answers;
             renderAnswers();
@@ -163,20 +167,15 @@
         }
 
         function judgeChoice(choice) {
-            if (isJudged) {
-                alert('すでに得点を加算済みです。「Next Question」を押してください。');
-                return;
-            }
+            if (isJudged) return; // すでに加算済みなら何もしない
             if (!isRevealed) {
                 alert('先に「👀 誰が押したか見る」を押して、名前を公開してください！');
                 return;
             }
             
-            if (confirm(`【 ${choice} 】を正解として得点を加算しますか？`)) {
-                isJudged = true;
-                socket.emit('judge_answer', choice);
-                alert(`正解者に得点が加算されました！`);
-            }
+            // 確認画面（アラート）を廃止し、クリック後すぐに加算処理を実行
+            isJudged = true;
+            socket.emit('judge_answer', choice);
         }
 
         function resetQuestion() {
@@ -220,9 +219,11 @@
                     div.className = 'rank-item';
                     if(rank === 1) div.classList.add('rank-1');
                     div.innerHTML = `第 ${rank} 位: ${player.name} <span style="color:#666; font-size:1rem;">(${player.score}点)</span>`;
-                    podium.appendChild(div);
+                    
+                    // prependを使うことで、後から表示される上位の人が一番上に積まれるようになります
+                    podium.prepend(div);
                 }, delay);
-                delay += 1500;
+                delay += 1000;
             });
         }
     </script>
