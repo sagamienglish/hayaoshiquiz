@@ -20,10 +20,13 @@
         .score-settings-inline { font-size: 0.85rem; color: #555; display: flex; align-items: center; gap: 5px; background: #f8f9fa; padding: 5px 10px; border-radius: 5px; border: 1px solid #ddd; font-weight: bold;}
         .score-settings-inline input { width: 40px; padding: 3px; font-size: 0.85rem; text-align: center; border: 1px solid #ccc; border-radius: 3px; font-weight: bold; background: white;}
         
-        .question-box { background: white; margin-bottom: 20px; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; border: 2px dashed #ccc;}
+        .question-box { background: white; margin-bottom: 20px; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; border: 2px dashed #ccc; position: relative;}
         .question-box h2 { font-size: 1.2rem; color: #007bff; margin: 0 0 10px 0;}
         .question-box h3 { font-size: 1.8rem; color: #333; margin: 0;}
         
+        /* ▼ 追加：回答状況の表示 */
+        .answer-status { position: absolute; top: 15px; right: 15px; background: #e9ecef; padding: 5px 15px; border-radius: 20px; font-weight: bold; color: #495057; font-size: 1.1rem; border: 2px solid #ced4da;}
+
         #current-leaders { font-size: 0.9rem; color: #444; text-align: right; line-height: 1.4; font-weight: bold;}
         .leader-title { font-size: 1rem; color: #000; margin-bottom: 5px; border-bottom: 2px solid #ccc; text-align: right;}
 
@@ -44,7 +47,8 @@
         .choice-header { padding: 15px 0; text-align: center; color: white; font-size: 2rem; font-family: 'Fredoka One', cursive; cursor: pointer; position: relative;}
         .choice-header:hover::after { content: '正解にする'; position: absolute; top: 10px; right: 10px; font-size: 0.9rem; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; font-family: 'Noto Sans JP', sans-serif;}
         
-        .choice-text { font-family: 'Noto Sans JP', sans-serif; font-size: 1rem; padding: 10px; text-align: center; font-weight: bold; color: #333; border-bottom: 2px solid #eee; background: #fafafa; min-height: 2.5em; display: flex; align-items: center; justify-content: center; word-break: break-all;}
+        .choice-text { font-family: 'Noto Sans JP', sans-serif; font-size: 1.2rem; padding: 10px; text-align: center; font-weight: bold; color: #333; border-bottom: 2px solid #eee; background: #fafafa; min-height: 2.5em; display: flex; align-items: center; justify-content: center; word-break: break-all; opacity: 0; transition: opacity 0.3s;}
+        .choice-text.show { opacity: 1; } /* アニメーション用クラス */
 
         .bg-A { background-color: #e63946; }
         .bg-B { background-color: #2a9d8f; }
@@ -54,9 +58,9 @@
         li { margin-bottom: 8px; border-bottom: 1px dashed #ddd; }
 
         #settings-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 600px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 600px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto;}
         .settings-group { margin-bottom: 15px; font-size: 1.1rem; background: #f8f9fa; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; font-weight: bold;}
-        .settings-group input { width: 60px; padding: 8px; font-size: 1.1rem; text-align: center; border-radius: 5px; border: 1px solid #ccc; font-weight: bold;}
+        .settings-group input, .settings-group select { width: 100px; padding: 8px; font-size: 1.1rem; text-align: center; border-radius: 5px; border: 1px solid #ccc; font-weight: bold;}
         .excel-group { flex-direction: column; align-items: flex-start; gap: 10px; }
         .excel-group textarea { width: 100%; font-size: 1rem; padding: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; font-family: monospace; white-space: pre;}
         .btn-save { background-color: #4CAF50; width: 100%; font-size: 1.2rem; padding: 12px; margin-top: 10px; }
@@ -69,9 +73,13 @@
             100% { transform: scale(1) rotate(0deg); opacity: 1; }
         }
 
-        #results { text-align: center; }
+        #results, #interim-results { text-align: center; }
         .rank-item { background: white; margin: 10px auto; width: 80%; max-width: 500px; padding: 20px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.1); opacity: 0; transform: translateY(50px); animation: popIn 0.5s forwards; }
         .rank-1 { font-size: 2.5rem; color: #d4af37; background: #fffdf0; border: 3px solid #d4af37;}
+        
+        /* ▼ 中間ランキング用（アニメなしでパッと出す） */
+        .rank-item-interim { background: white; margin: 5px auto; width: 80%; max-width: 500px; padding: 15px; border-radius: 10px; font-size: 1.3rem; font-weight: bold; border: 2px solid #eee; }
+        
         @keyframes popIn { to { opacity: 1; transform: translateY(0); } }
         .user-badge { display: inline-block; background: #007bff; color: white; padding: 8px 15px; border-radius: 20px; margin: 5px; font-weight: bold; font-size: 1.1rem; }
     </style>
@@ -95,7 +103,7 @@
             <p style="font-size: 0.9rem; margin-top: 5px; color: #666;">https://hayaoshiquiz.onrender.com/student.html</p>
         </div>
         
-        <h3 style="text-align: center; margin-top: 20px;">参加中の生徒</h3>
+        <h3 style="text-align: center; margin-top: 20px;">参加中の生徒: <span id="lobby-count-text" style="color:#e63946; font-size:1.5rem;">0</span> 名</h3>
         <div id="joined-users" style="text-align: center;">まだ誰もいません...</div>
         
         <button class="btn-start" onclick="startQuiz()">▶ クイズをスタート！</button>
@@ -113,11 +121,20 @@
                 <span>⚡ 早く答えた <input type="number" id="setting-count" value="1"> 人には:</span>
                 <span>+<input type="number" id="setting-bonus" value="5"> 点</span>
             </div>
+            <div class="settings-group">
+                <span>🏆 ランキング発表のタイミング:</span>
+                <select id="setting-ranking-freq">
+                    <option value="0">最後のみ (デフォルト)</option>
+                    <option value="1">1問ごと</option>
+                    <option value="3">3問ごと</option>
+                    <option value="5">5問ごと</option>
+                </select>
+            </div>
             
             <div class="settings-group excel-group">
                 <span style="font-weight: bold;">📝 問題データ (Excelからコピー＆ペースト)</span>
-                <span style="font-size: 0.85rem; color: #666;">※空欄の場合は「口頭での出題モード」になります</span>
-                <textarea id="quizData" rows="6" placeholder="apple&#9;りんご&#9;みかん&#9;ばなな&#9;ぶどう&#9;1"></textarea>
+                <span style="font-size: 0.85rem; color: #666;">問題・選択肢・正解番号(1〜4 または A〜D)の順。空欄の場合は口頭出題になります。</span>
+                <textarea id="quizData" rows="6" placeholder="apple&#9;りんご&#9;みかん&#9;ばなな&#9;ぶどう&#9;A"></textarea>
             </div>
 
             <button class="btn btn-save" onclick="saveAndCloseSettings()">保存して閉じる</button>
@@ -138,6 +155,7 @@
         </div>
         
         <div class="question-box">
+            <div class="answer-status">📝 回答: <span id="answered-count" style="color:#e63946;">0</span> / <span id="total-count">0</span> 名</div>
             <h2 id="teacher-q-num">第 - 問</h2>
             <h3 id="teacher-q-text">問題を読み込み中...</h3>
         </div>
@@ -146,7 +164,7 @@
             <button class="btn-reveal" onclick="revealNames()">👀 回答者名チェック</button>
             <button class="btn-judge" onclick="autoJudge()">🎯 答え合わせ</button>
             <button class="btn-reset" onclick="resetQuestion()">🔄 回答者クリア</button>
-            <button class="btn-next" onclick="nextQuestion()">➡️ 次の問題へ</button>
+            <button class="btn-next" onclick="handleNextClick()">➡️ 次の問題へ</button>
         </div>
         
         <div class="container">
@@ -174,6 +192,12 @@
 
         <button class="btn-finish" onclick="finishQuiz()">🏁 Finish this quiz</button>
     </div>
+    
+    <div id="interim-results" style="display: none; padding-top: 20px;">
+        <h1 style="color:#007bff; margin-bottom: 20px;">🏆 途中経過ランキング 🏆</h1>
+        <div id="interim-podium" style="margin-bottom: 30px;"></div>
+        <button class="btn-next" style="font-size: 1.5rem; padding: 15px 40px;" onclick="nextFromInterim()">➡️ 次の問題へ進む</button>
+    </div>
 
     <div id="correct-overlay">
         <div class="correct-text" id="correct-display-text">正解は A！</div>
@@ -193,7 +217,11 @@
         let isJudged = false;
         let currentRanking = [];
         let currentCorrectAnswer = ""; 
-        let totalPlayers = 0; // ▼ 全体の参加人数を把握するための変数
+        let totalPlayers = 0; 
+        
+        let currentQuestionNumber = 1;
+        let totalQuestionsCount = 1;
+        
         const choiceLetters = ["A", "B", "C", "D"];
 
         function playAudio(id) {
@@ -205,18 +233,11 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            if(localStorage.getItem('quizData')) {
-                document.getElementById('quizData').value = localStorage.getItem('quizData');
-            }
-            if(localStorage.getItem('settingBase')) {
-                document.getElementById('setting-base').value = localStorage.getItem('settingBase');
-            }
-            if(localStorage.getItem('settingBonus')) {
-                document.getElementById('setting-bonus').value = localStorage.getItem('settingBonus');
-            }
-            if(localStorage.getItem('settingCount')) {
-                document.getElementById('setting-count').value = localStorage.getItem('settingCount');
-            }
+            if(localStorage.getItem('quizData')) document.getElementById('quizData').value = localStorage.getItem('quizData');
+            if(localStorage.getItem('settingBase')) document.getElementById('setting-base').value = localStorage.getItem('settingBase');
+            if(localStorage.getItem('settingBonus')) document.getElementById('setting-bonus').value = localStorage.getItem('settingBonus');
+            if(localStorage.getItem('settingCount')) document.getElementById('setting-count').value = localStorage.getItem('settingCount');
+            if(localStorage.getItem('settingFreq')) document.getElementById('setting-ranking-freq').value = localStorage.getItem('settingFreq');
         });
 
         function saveLocalData() {
@@ -224,6 +245,7 @@
             localStorage.setItem('settingBase', document.getElementById('setting-base').value);
             localStorage.setItem('settingBonus', document.getElementById('setting-bonus').value);
             localStorage.setItem('settingCount', document.getElementById('setting-count').value);
+            localStorage.setItem('settingFreq', document.getElementById('setting-ranking-freq').value);
         }
 
         function openSettings() {
@@ -235,7 +257,9 @@
         }
 
         socket.on('update_lobby', (names) => {
-            totalPlayers = names.length; // ▼ 現在の参加人数を更新
+            totalPlayers = names.length; 
+            document.getElementById('lobby-count-text').innerText = totalPlayers; // ⑦ 人数強調
+            document.getElementById('total-count').innerText = totalPlayers; // ⑤ 質問画面の分母
             const list = document.getElementById('joined-users');
             list.innerHTML = '';
             names.forEach(name => {
@@ -256,8 +280,9 @@
             const parsedQuestions = [];
 
             if (!rawData.trim()) {
+                // ⑥ 空の場合はテキストを空欄にする
                 parsedQuestions.push({
-                    question: "【 口頭問題 】先生の質問を聞いてください",
+                    question: "",
                     choices: ["", "", "", ""],
                     correctChoiceLetter: "" 
                 });
@@ -266,11 +291,20 @@
                 for (let i = 0; i < lines.length; i++) {
                     const columns = lines[i].split('\t');
                     if (columns.length >= 6) {
-                        const correctIndex = parseInt(columns[5].trim(), 10) - 1; 
+                        // ④ 正解が 1~4 でも A~D でも判定できるように処理
+                        let ansStr = columns[5].trim().toUpperCase();
+                        let correctIndex = -1;
+                        if (ansStr === 'A' || ansStr === '1') correctIndex = 0;
+                        else if (ansStr === 'B' || ansStr === '2') correctIndex = 1;
+                        else if (ansStr === 'C' || ansStr === '3') correctIndex = 2;
+                        else if (ansStr === 'D' || ansStr === '4') correctIndex = 3;
+                        
+                        let letter = (correctIndex >= 0) ? choiceLetters[correctIndex] : "";
+                        
                         parsedQuestions.push({
                             question: columns[0].trim(),
                             choices: [ columns[1].trim(), columns[2].trim(), columns[3].trim(), columns[4].trim() ],
-                            correctChoiceLetter: choiceLetters[correctIndex]
+                            correctChoiceLetter: letter
                         });
                     }
                 }
@@ -295,43 +329,51 @@
         }
 
         socket.on('new_question', (data) => {
-            document.getElementById('teacher-q-num').innerText = `第 ${data.questionNumber} 問 / 全 ${data.totalQuestions} 問`;
+            currentQuestionNumber = data.questionNumber;
+            totalQuestionsCount = data.totalQuestions;
+            
+            document.getElementById('teacher-q-num').innerText = `第 ${currentQuestionNumber} 問 / 全 ${totalQuestionsCount} 問`;
             document.getElementById('teacher-q-text').innerText = data.question;
             currentCorrectAnswer = data.correctChoiceLetter || ""; 
             
+            // ⑤ 質問切り替え時に回答数を0リセット
+            document.getElementById('answered-count').innerText = "0";
+            
+            // ② 選択肢を時間差でパッパッパッと表示する演出
             const letters = ['A', 'B', 'C', 'D'];
-            data.choices.forEach((choice, index) => {
-                document.getElementById(`teacher-text-${letters[index]}`).innerText = choice;
+            letters.forEach(l => {
+                const el = document.getElementById(`teacher-text-${l}`);
+                el.innerText = '';
+                el.classList.remove('show');
             });
+
+            // 問題表示から1秒後にA、その後0.5秒間隔
+            setTimeout(() => { showChoiceText('A', data.choices[0]); }, 1000);
+            setTimeout(() => { showChoiceText('B', data.choices[1]); }, 1500);
+            setTimeout(() => { showChoiceText('C', data.choices[2]); }, 2000);
+            setTimeout(() => { showChoiceText('D', data.choices[3]); }, 2500);
         });
 
-        // ▼ 全員回答を検知して自動で進行する機能を追加
+        function showChoiceText(letter, text) {
+            const el = document.getElementById(`teacher-text-${letter}`);
+            el.innerText = text;
+            el.classList.add('show');
+            playAudio('audio-reveal'); // 選択肢が出るたびに軽く音を鳴らすとワクワクします
+        }
+
         socket.on('update_answers_teacher', (answers) => {
             currentAnswers = answers;
             renderAnswers();
 
-            // 現在回答した人数の合計を計算
             let totalAnswers = answers.A.length + answers.B.length + answers.C.length + answers.D.length;
+            document.getElementById('answered-count').innerText = totalAnswers; // ⑤ 回答状況を更新
             
-            // 参加者が1人以上いて、全員が回答済みの場合
             if (totalPlayers > 0 && totalAnswers === totalPlayers && !isJudged) {
-                // 正解が設定されている（Excelデータがある）場合のみ自動進行する
                 if (currentCorrectAnswer !== "") {
-                    
-                    // 最後の人が答えてから「1秒」のタメを作る
                     setTimeout(() => {
-                        // 待っている間に先生が手動でボタンを押していなければ進行
                         if (!isJudged) {
-                            if (!isRevealed) {
-                                revealNames(); // 回答者をオープン！
-                            }
-                            
-                            // オープンしてから「1.5秒後」に正解発表！
-                            setTimeout(() => {
-                                if (!isJudged) {
-                                    autoJudge();
-                                }
-                            }, 1500); 
+                            if (!isRevealed) revealNames(); 
+                            setTimeout(() => { if (!isJudged) autoJudge(); }, 1500); 
                         }
                     }, 1000);
                 }
@@ -394,14 +436,55 @@
             socket.emit('reset_question');
             isRevealed = false;
             isJudged = false;
+            document.getElementById('answered-count').innerText = "0"; // ⑤
             playAudio('audio-reset');
         }
 
+        // ⑧ 「次の問題へ」ボタンを押した時の処理をインターセプト
+        function handleNextClick() {
+            const freq = parseInt(document.getElementById('setting-ranking-freq').value, 10);
+            
+            // 中間ランキングを表示する条件（最後でない＆割り切れる問数）
+            if (freq > 0 && currentQuestionNumber % freq === 0 && currentQuestionNumber < totalQuestionsCount) {
+                showInterimRanking();
+            } else {
+                nextQuestion();
+            }
+        }
+        
         function nextQuestion() {
             socket.emit('next_question');
             isRevealed = false;
             isJudged = false;
             playAudio('audio-reset');
+        }
+        
+        // ⑧ 中間ランキング表示関数（アニメなし）
+        function showInterimRanking() {
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('interim-results').style.display = 'block';
+            
+            const podium = document.getElementById('interim-podium');
+            podium.innerHTML = '';
+            
+            if (currentRanking.length === 0) {
+                podium.innerHTML = '<p>まだ誰も得点していません...</p>';
+                return;
+            }
+            
+            let top10 = currentRanking.slice(0, 10); // 途中経過は少し多めに表示しても良いかも
+            top10.forEach((player, index) => {
+                let div = document.createElement('div');
+                div.className = 'rank-item-interim';
+                div.innerHTML = `第 ${index + 1} 位: ${player.name} (${player.score}点)`;
+                podium.appendChild(div);
+            });
+        }
+        
+        function nextFromInterim() {
+            document.getElementById('interim-results').style.display = 'none';
+            document.getElementById('quiz-screen').style.display = 'block';
+            nextQuestion();
         }
 
         socket.on('update_ranking', (ranking) => {
