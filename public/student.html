@@ -9,23 +9,19 @@
         body { font-family: 'Noto Sans JP', sans-serif; text-align: center; background-color: #f0f4f8; margin: 0; padding: 10px; }
         h2 { color: #333; }
         
-        /* スコア表示パネル */
         #score-panel { display: none; background: #fff; border-radius: 10px; padding: 10px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-weight: bold; font-size: 1.2rem;}
         #my-score { color: #ff6b6b; font-size: 1.8rem; font-family: 'Fredoka One', cursive; margin: 0 5px;}
 
-        /* 入力画面 */
         #login-screen { margin-top: 50px; }
         input[type="text"] { font-size: 1.5rem; padding: 15px; width: 80%; max-width: 300px; margin-bottom: 20px; text-align: center; border: 2px solid #ccc; border-radius: 10px; box-sizing: border-box;}
         .btn-join { font-size: 1.5rem; font-weight: bold; padding: 15px 30px; background-color: #ff6b6b; color: white; border: none; border-radius: 10px; cursor: pointer; width: 80%; max-width: 300px; box-shadow: 0 4px 0px #d9534f;}
         .btn-join:active { transform: translateY(4px); box-shadow: none; }
 
-        /* ボタン画面 */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
         .btn-choice { font-family: 'Fredoka One', cursive; font-size: 4rem; padding: 30px 0; color: white; border: none; border-radius: 15px; cursor: pointer; transition: transform 0.1s; box-shadow: 0 6px 0px rgba(0,0,0,0.2);}
         .btn-choice:active { transform: translateY(6px); box-shadow: none; }
         .btn-choice:disabled { opacity: 0.5; cursor: not-allowed; transform: translateY(6px); box-shadow: none;}
         
-        /* 先生の画面と同じ色に統一 */
         #btn-A { background-color: #e63946; box-shadow: 0 6px 0px #b02a36;}
         #btn-B { background-color: #2a9d8f; box-shadow: 0 6px 0px #1e756a;}
         #btn-C { background-color: #e9c46a; box-shadow: 0 6px 0px #bda056;}
@@ -51,4 +47,67 @@
             <button class="btn-choice" id="btn-A" onclick="sendAnswer('A')">A</button>
             <button class="btn-choice" id="btn-B" onclick="sendAnswer('B')">B</button>
             <button class="btn-choice" id="btn-C" onclick="sendAnswer('C')">C</button>
-            <button class="btn-choice" id="btn-D" onclick="sendAnswer('D')">D
+            <button class="btn-choice" id="btn-D" onclick="sendAnswer('D')">D</button>
+        </div>
+        <div id="status-msg">先生の問題を聞いて答えを選んでね！</div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket;
+        try {
+            socket = io();
+        } catch (e) {
+            console.error('Socket.ioの読み込みに失敗しました');
+        }
+        
+        let myName = '';
+
+        function joinRoom() {
+            const nameInput = document.getElementById('student-name').value.trim();
+            if (nameInput === '') {
+                alert('名前を入力してください！');
+                return;
+            }
+            myName = nameInput;
+            
+            if (socket) {
+                socket.emit('join_game', myName); 
+            }
+
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('score-panel').style.display = 'block';
+            document.getElementById('buzzer-screen').style.display = 'block';
+            document.getElementById('display-name').textContent = myName;
+        }
+
+        function sendAnswer(choice) {
+            if (socket) {
+                socket.emit('submit_answer', { name: myName, choice: choice });
+            }
+            
+            const buttons = document.querySelectorAll('.btn-choice');
+            buttons.forEach(btn => btn.disabled = true);
+            document.getElementById('status-msg').textContent = '【 ' + choice + ' 】を送信しました！先生の発表を待ってね。';
+        }
+
+        if (socket) {
+            socket.on('clear_student', () => {
+                const buttons = document.querySelectorAll('.btn-choice');
+                buttons.forEach(btn => btn.disabled = false);
+                document.getElementById('status-msg').textContent = '次の問題です！答えを選んでね！';
+            });
+
+            socket.on('sync_score', (score) => {
+                document.getElementById('my-score').textContent = score;
+            });
+
+            socket.on('sync_scores_all', (players) => {
+                if (players[myName] !== undefined) {
+                    document.getElementById('my-score').textContent = players[myName];
+                }
+            });
+        }
+    </script>
+</body>
+</html>
