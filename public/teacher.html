@@ -82,6 +82,7 @@
     <audio id="audio-reveal" src="reveal.mp3" preload="auto"></audio>
     <audio id="audio-correct" src="correct.mp3" preload="auto"></audio>
     <audio id="audio-reset" src="reset.mp3" preload="auto"></audio>
+    <audio id="audio-ranking" src="ranking.mp3" preload="auto"></audio>
 
     <div id="lobby">
         <h1>Quiz</h1>
@@ -194,9 +195,6 @@
         let currentCorrectAnswer = ""; 
         const choiceLetters = ["A", "B", "C", "D"];
 
-        // ==========================================
-        // 音声再生コントロール
-        // ==========================================
         function playAudio(id) {
             const audioEl = document.getElementById(id);
             if(audioEl) {
@@ -205,9 +203,6 @@
             }
         }
 
-        // ==========================================
-        // ブラウザ保存機能（LocalStorage）
-        // ==========================================
         document.addEventListener("DOMContentLoaded", () => {
             if(localStorage.getItem('quizData')) {
                 document.getElementById('quizData').value = localStorage.getItem('quizData');
@@ -230,9 +225,6 @@
             localStorage.setItem('settingCount', document.getElementById('setting-count').value);
         }
 
-        // ==========================================
-        // UI・クイズ進行コントロール
-        // ==========================================
         function openSettings() {
             document.getElementById('settings-modal').style.display = 'flex';
         }
@@ -254,7 +246,7 @@
             
             const bgm = document.getElementById('audio-bgm');
             if (bgm) {
-                bgm.volume = 0.3;
+                bgm.volume = 0.2; // ▼ 音量を20%に調整
                 playAudio('audio-bgm');
             }
 
@@ -398,8 +390,15 @@
             }
         });
 
-        function finishQuiz() {
-            if(!confirm('クイズを終了して結果発表に移りますか？')) return;
+        // サーバーから「最後の問題の次へ」が押された際の終了アナウンスを受信
+        socket.on('quiz_finished', () => {
+            alert("全問題が終了しました！結果発表に移ります。");
+            finishQuiz(true); // 自動的に結果発表へ
+        });
+
+        // 結果発表の演出（アニメーションと効果音を連動）
+        function finishQuiz(isAuto = false) {
+            if(!isAuto && !confirm('クイズを終了して結果発表に移りますか？')) return;
 
             const bgm = document.getElementById('audio-bgm');
             if(bgm) bgm.pause();
@@ -411,7 +410,7 @@
             podium.innerHTML = '';
             
             let top5 = currentRanking.slice(0, 5).reverse(); 
-            let delay = 500; 
+            let delay = 1000; // 最初の発表までのタメ
             
             if(top5.length === 0) {
                 podium.innerHTML = '<h2>まだ誰も得点していません...！</h2>';
@@ -426,9 +425,11 @@
                     if(rank === 1) div.classList.add('rank-1');
                     div.innerHTML = `第 ${rank} 位: ${player.name} <span style="color:#666; font-size:1rem;">(${player.score}点)</span>`;
                     podium.prepend(div);
-                    playAudio('audio-reveal');
+                    
+                    // ▼ 順位が出るごとに ranking.mp3 を再生
+                    playAudio('audio-ranking');
                 }, delay);
-                delay += 1000;
+                delay += 1500; // 1.5秒間隔でじらしながら発表
             });
         }
     </script>
