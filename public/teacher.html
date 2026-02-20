@@ -8,14 +8,10 @@
         body { font-family: 'Noto Sans JP', sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; color: #333; }
         h1 { font-family: 'Fredoka One', cursive; font-size: 3rem; text-align: center; color: #ff6b6b; text-shadow: 2px 2px 0px #ffe6e6; margin: 0; padding: 0;}
         
-        #lobby { background: white; max-width: 600px; margin: 0 auto; padding: 30px; border-radius: 15px; box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
-        .settings-group { margin-bottom: 15px; font-size: 1.2rem; background: #f8f9fa; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;}
-        .settings-group input { width: 60px; padding: 8px; font-size: 1.2rem; text-align: center; border-radius: 5px; border: 1px solid #ccc; font-weight: bold;}
-        .user-badge { display: inline-block; background: #007bff; color: white; padding: 8px 15px; border-radius: 20px; margin: 5px; font-weight: bold; font-size: 1.1rem; }
+        #lobby { background: white; max-width: 600px; margin: 0 auto; padding: 30px; border-radius: 15px; box-shadow: 0 8px 15px rgba(0,0,0,0.1); text-align: center;}
         
-        /* Excel貼り付けエリア用の追加スタイル */
-        .excel-group { flex-direction: column; align-items: flex-start; gap: 10px; }
-        .excel-group textarea { width: 100%; font-size: 1rem; padding: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; font-family: monospace; white-space: pre;}
+        .btn-settings-top { font-size: 1.2rem; font-weight: bold; padding: 10px 20px; background-color: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 20px; box-shadow: 0 4px 0px #495057;}
+        .btn-settings-top:active { transform: translateY(4px); box-shadow: none; }
 
         .qr-section { text-align: center; margin: 25px 0; padding: 15px; background: #e9ecef; border-radius: 10px; }
         .qr-section img { border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 10px; }
@@ -25,7 +21,7 @@
         .score-settings-inline { font-size: 0.85rem; color: #555; display: flex; align-items: center; gap: 5px; background: #f8f9fa; padding: 5px 10px; border-radius: 5px; border: 1px solid #ddd; font-weight: bold;}
         .score-settings-inline input { width: 40px; padding: 3px; font-size: 0.85rem; text-align: center; border: 1px solid #ccc; border-radius: 3px; font-weight: bold; background: white;}
         
-        /* 問題表示ボックス（追加） */
+        /* 問題表示ボックス */
         .question-box { background: white; margin-bottom: 20px; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; border: 2px dashed #ccc;}
         .question-box h2 { font-size: 1.2rem; color: #007bff; margin: 0 0 10px 0; font-family: 'Noto Sans JP', sans-serif;}
         .question-box h3 { font-size: 1.8rem; color: #333; margin: 0;}
@@ -34,13 +30,15 @@
         #current-leaders { font-size: 0.9rem; color: #444; text-align: right; line-height: 1.4; font-weight: bold;}
         .leader-title { font-size: 1rem; color: #000; margin-bottom: 5px; border-bottom: 2px solid #ccc; text-align: right;}
 
-        .controls { text-align: center; margin-bottom: 20px; }
-        button { font-family: 'Fredoka One', cursive; font-size: 1.2rem; padding: 10px 20px; margin: 0 5px; border: none; border-radius: 8px; cursor: pointer; color: white; transition: transform 0.1s, opacity 0.2s; }
+        .controls { text-align: center; margin-bottom: 20px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;}
+        button { font-family: 'Fredoka One', cursive, 'Noto Sans JP'; font-size: 1.2rem; padding: 10px 20px; margin: 0; border: none; border-radius: 8px; cursor: pointer; color: white; transition: transform 0.1s, opacity 0.2s; font-weight: bold;}
         button:hover { transform: translateY(-2px); opacity: 0.9; }
         button:active { transform: translateY(0); }
-        .btn-start { background-color: #4CAF50; font-size: 1.5rem; width: 100%; margin-top: 20px; padding: 15px; }
+        .btn-start { background-color: #4CAF50; font-size: 1.5rem; width: 100%; margin-top: 20px; padding: 15px; box-shadow: 0 4px 0px #388E3C;}
+        .btn-start:active { box-shadow: none; transform: translateY(4px); }
         .btn-reveal { background-color: #9c27b0; }
         .btn-reset { background-color: #6c757d; }
+        .btn-judge { background-color: #ff9800; color: white; }
         .btn-next { background-color: #007bff; }
         .btn-finish { background-color: #343a40; display: block; margin: 40px auto; font-size: 1.5rem; }
 
@@ -55,6 +53,15 @@
         ol { padding-left: 20px; margin: 15px; font-size: 1.2rem; font-weight: bold; min-height: 100px;}
         li { margin-bottom: 8px; border-bottom: 1px dashed #ddd; }
 
+        /* 設定モーダル */
+        #settings-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 600px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .settings-group { margin-bottom: 15px; font-size: 1.1rem; background: #f8f9fa; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; font-weight: bold;}
+        .settings-group input { width: 60px; padding: 8px; font-size: 1.1rem; text-align: center; border-radius: 5px; border: 1px solid #ccc; font-weight: bold;}
+        .excel-group { flex-direction: column; align-items: flex-start; gap: 10px; }
+        .excel-group textarea { width: 100%; font-size: 1rem; padding: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; font-family: monospace; white-space: pre;}
+        .btn-save { background-color: #4CAF50; width: 100%; font-size: 1.2rem; padding: 12px; margin-top: 10px; }
+
         /* 教員画面の正解アニメーション */
         #correct-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; flex-direction: column; justify-content: center; align-items: center; }
         .correct-text { color: #ffeb3b; font-size: 7rem; font-family: 'Fredoka One', cursive; text-shadow: 4px 4px 0px #ff9800; animation: popZoom 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
@@ -68,26 +75,21 @@
         .rank-item { background: white; margin: 10px auto; width: 80%; max-width: 500px; padding: 20px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.1); opacity: 0; transform: translateY(50px); animation: popIn 0.5s forwards; }
         .rank-1 { font-size: 2.5rem; color: #d4af37; background: #fffdf0; border: 3px solid #d4af37;}
         @keyframes popIn { to { opacity: 1; transform: translateY(0); } }
+        
+        .user-badge { display: inline-block; background: #007bff; color: white; padding: 8px 15px; border-radius: 20px; margin: 5px; font-weight: bold; font-size: 1.1rem; }
     </style>
 </head>
 <body>
 
+    <audio id="audio-bgm" loop src="https://assets.mixkit.co/music/preview/mixkit-game-level-music-686.mp3"></audio>
+    <audio id="audio-reveal" src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3"></audio>
+    <audio id="audio-correct" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3"></audio>
+    <audio id="audio-reset" src="https://assets.mixkit.co/sfx/preview/mixkit-fast-double-click-on-mouse-275.mp3"></audio>
+
     <div id="lobby">
-        <h1>Quiz 設定</h1>
-        <div class="settings-group">
-            <span>⭕ 正解した時の基本点数:</span>
-            <span><input type="number" id="setting-base" value="10"> 点</span>
-        </div>
-        <div class="settings-group">
-            <span>⚡ 早く答えた <input type="number" id="setting-count" value="1"> 人には:</span>
-            <span>+<input type="number" id="setting-bonus" value="5"> 点</span>
-        </div>
-        
-        <div class="settings-group excel-group">
-            <span style="font-weight: bold;">📝 問題データ (Excelからコピー＆ペースト)</span>
-            <span style="font-size: 0.85rem; color: #666;">問題・選択肢1〜4・正解番号(1〜4) の順で貼り付けてください</span>
-            <textarea id="quizData" rows="6" placeholder="apple&#9;りんご&#9;みかん&#9;ばなな&#9;ぶどう&#9;1"></textarea>
-        </div>
+        <h1>Quiz</h1>
+        <br>
+        <button class="btn-settings-top" onclick="openSettings()">⚙️ クイズ設定・問題データ入力</button>
 
         <div class="qr-section">
             <p style="font-weight: bold; margin: 0;">👇 生徒用 参加QRコード 👇</p>
@@ -98,6 +100,29 @@
         <div id="joined-users" style="text-align: center;">まだ誰もいません...</div>
         
         <button class="btn-start" onclick="startQuiz()">▶ クイズをスタート！</button>
+    </div>
+
+    <div id="settings-modal">
+        <div class="modal-content">
+            <h2 style="margin-top:0; color:#007bff;">⚙️ 設定</h2>
+            
+            <div class="settings-group">
+                <span>⭕ 正解した時の基本点数:</span>
+                <span><input type="number" id="setting-base" value="10"> 点</span>
+            </div>
+            <div class="settings-group">
+                <span>⚡ 早く答えた <input type="number" id="setting-count" value="1"> 人には:</span>
+                <span>+<input type="number" id="setting-bonus" value="5"> 点</span>
+            </div>
+            
+            <div class="settings-group excel-group">
+                <span style="font-weight: bold;">📝 問題データ (Excelからコピー＆ペースト)</span>
+                <span style="font-size: 0.85rem; color: #666;">※空欄の場合は「口頭での出題モード」になります</span>
+                <textarea id="quizData" rows="6" placeholder="apple&#9;りんご&#9;みかん&#9;ばなな&#9;ぶどう&#9;1"></textarea>
+            </div>
+
+            <button class="btn btn-save" onclick="closeSettings()">保存して閉じる</button>
+        </div>
     </div>
 
     <div id="quiz-screen" style="display: none;">
@@ -115,14 +140,14 @@
         
         <div class="question-box">
             <h2 id="teacher-q-num">第 - 問</h2>
-            <h3 id="teacher-q-text">問題データを読み込み中...</h3>
-            <p style="color: #ff6b6b; font-weight: bold; margin: 10px 0 0 0;">💡 設定された正解: <span id="teacher-q-ans"></span></p>
-        </div>
+            <h3 id="teacher-q-text">問題を読み込み中...</h3>
+            </div>
 
         <div class="controls">
-            <button class="btn-reveal" onclick="revealNames()">👀 誰が押したか見る (Reveal)</button>
-            <button class="btn-reset" onclick="resetQuestion()">🔄 同じ問題でやり直し (Reset)</button>
-            <button class="btn-next" onclick="nextQuestion()">➡️ 次の問題へ (Next Question)</button>
+            <button class="btn-reveal" onclick="revealNames()">👀 回答者名チェック</button>
+            <button class="btn-judge" onclick="autoJudge()">🎯 答え合わせ</button>
+            <button class="btn-reset" onclick="resetQuestion()">🔄 回答者クリア</button>
+            <button class="btn-next" onclick="nextQuestion()">➡️ 次の問題へ</button>
         </div>
         
         <div class="container">
@@ -164,7 +189,26 @@
         let isRevealed = false;
         let isJudged = false;
         let currentRanking = [];
+        let currentCorrectAnswer = ""; // 現在の問題の正解を記憶
         const choiceLetters = ["A", "B", "C", "D"];
+
+        // オーディオ要素の取得
+        const bgm = document.getElementById('audio-bgm');
+        const sfxReveal = document.getElementById('audio-reveal');
+        const sfxCorrect = document.getElementById('audio-correct');
+        const sfxReset = document.getElementById('audio-reset');
+
+        // 音量を少し調整（BGMが大きすぎないように）
+        bgm.volume = 0.3;
+        sfxCorrect.volume = 0.8;
+
+        // --- 設定モーダルの開閉 ---
+        function openSettings() {
+            document.getElementById('settings-modal').style.display = 'flex';
+        }
+        function closeSettings() {
+            document.getElementById('settings-modal').style.display = 'none';
+        }
 
         socket.on('update_lobby', (names) => {
             const list = document.getElementById('joined-users');
@@ -175,28 +219,36 @@
         });
 
         function startQuiz() {
-            // Excelデータの読み込みとチェック
             const rawData = document.getElementById('quizData').value;
-            if (!rawData) return alert("問題データを入力してください！");
-
-            const lines = rawData.trim().split('\n');
             const parsedQuestions = [];
 
-            for (let i = 0; i < lines.length; i++) {
-                const columns = lines[i].split('\t');
-                if (columns.length >= 6) {
-                    const correctIndex = parseInt(columns[5].trim(), 10) - 1; 
-                    parsedQuestions.push({
-                        question: columns[0].trim(),
-                        choices: [ columns[1].trim(), columns[2].trim(), columns[3].trim(), columns[4].trim() ],
-                        correctChoiceLetter: choiceLetters[correctIndex]
-                    });
+            if (!rawData.trim()) {
+                // データが空の場合は、口頭出題用の空のデータを作る
+                parsedQuestions.push({
+                    question: "【 口頭問題 】先生の質問を聞いてください",
+                    choices: ["", "", "", ""],
+                    correctChoiceLetter: "" // 空にしておく
+                });
+            } else {
+                const lines = rawData.trim().split('\n');
+                for (let i = 0; i < lines.length; i++) {
+                    const columns = lines[i].split('\t');
+                    if (columns.length >= 6) {
+                        const correctIndex = parseInt(columns[5].trim(), 10) - 1; 
+                        parsedQuestions.push({
+                            question: columns[0].trim(),
+                            choices: [ columns[1].trim(), columns[2].trim(), columns[3].trim(), columns[4].trim() ],
+                            correctChoiceLetter: choiceLetters[correctIndex]
+                        });
+                    }
                 }
             }
 
-            if (parsedQuestions.length === 0) return alert("データの形式が正しくありません。「問題・選択肢1〜4・正解番号」の順か確認してください。");
+            if (parsedQuestions.length === 0) return alert("データの形式が正しくありません。");
 
-            // サーバーに問題データを送信
+            // BGM再生開始
+            bgm.play().catch(e => console.log("BGM自動再生ブロック:", e));
+
             socket.emit('start_quiz_data', parsedQuestions);
 
             const base = document.getElementById('setting-base').value;
@@ -213,13 +265,11 @@
             document.getElementById('quiz-screen').style.display = 'block';
         }
 
-        // サーバーから現在の問題を受け取って表示
         socket.on('new_question', (data) => {
             document.getElementById('teacher-q-num').innerText = `第 ${data.questionNumber} 問 / 全 ${data.totalQuestions} 問`;
             document.getElementById('teacher-q-text').innerText = data.question;
-            if(data.correctChoiceLetter) {
-                document.getElementById('teacher-q-ans').innerText = data.correctChoiceLetter;
-            }
+            // 画面には表示しないが、裏側で正解を記憶しておく
+            currentCorrectAnswer = data.correctChoiceLetter || ""; 
         });
 
         socket.on('update_answers_teacher', (answers) => {
@@ -242,14 +292,23 @@
 
         function revealNames() {
             isRevealed = true;
+            sfxReveal.play(); // 名前オープンの音
             renderAnswers();
         }
 
-        // ※元の仕様通り、先生がA,B,C,Dのヘッダーをクリックした時に正解判定とアニメーションが走ります
+        // 新機能：「答え合わせ」ボタン用
+        function autoJudge() {
+            if (!currentCorrectAnswer) {
+                alert("この問題には正解が設定されていません。\nA〜Dのパネルを直接クリックして正解を発表してください。");
+                return;
+            }
+            judgeChoice(currentCorrectAnswer);
+        }
+
         function judgeChoice(choice) {
             if (isJudged) return; 
             if (!isRevealed) {
-                alert('先に「👀 誰が押したか見る」を押して、名前を公開してください！');
+                alert('先に「👀 回答者名チェック」を押して、名前を公開してください！');
                 return;
             }
             isJudged = true;
@@ -262,6 +321,9 @@
                 choice: choice, 
                 currentSettings: { basePoints: currentBase, bonusPoints: currentBonus, bonusCount: currentCount } 
             });
+
+            // 正解発表の音
+            sfxCorrect.play();
 
             const overlay = document.getElementById('correct-overlay');
             const text = document.getElementById('correct-display-text');
@@ -277,13 +339,14 @@
             socket.emit('reset_question');
             isRevealed = false;
             isJudged = false;
+            sfxReset.play(); // リセット音
         }
 
-        // 次の問題へ進む処理（Excelの次のデータへ）
         function nextQuestion() {
             socket.emit('next_question');
             isRevealed = false;
             isJudged = false;
+            sfxReset.play();
         }
 
         socket.on('update_ranking', (ranking) => {
@@ -304,6 +367,8 @@
 
         function finishQuiz() {
             if(!confirm('クイズを終了して結果発表に移りますか？')) return;
+
+            bgm.pause(); // BGM停止
 
             document.getElementById('quiz-screen').style.display = 'none';
             document.getElementById('results').style.display = 'block';
@@ -327,6 +392,7 @@
                     if(rank === 1) div.classList.add('rank-1');
                     div.innerHTML = `第 ${rank} 位: ${player.name} <span style="color:#666; font-size:1rem;">(${player.score}点)</span>`;
                     podium.prepend(div);
+                    sfxReveal.play(); // 順位発表ごとにポッと音を鳴らす
                 }, delay);
                 delay += 1000;
             });
