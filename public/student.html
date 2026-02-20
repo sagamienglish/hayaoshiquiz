@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>回答用画面</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background-color: #e9ecef; margin: 0; padding: 20px; }
+        #login-screen, #buzzer-screen { margin-top: 20px; }
+        input[type="text"] { font-size: 1.5rem; padding: 10px; width: 80%; max-width: 300px; margin-bottom: 15px; text-align: center; }
+        .btn-join { font-size: 1.5rem; padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .btn-choice { font-size: 4rem; font-weight: bold; padding: 40px 0; color: white; border: none; border-radius: 15px; cursor: pointer; }
+        .btn-choice:active { opacity: 0.7; }
+        .btn-choice:disabled { background-color: #ccc !important; cursor: not-allowed; }
+        #btn-A { background-color: #e63946; }
+        #btn-B { background-color: #2a9d8f; }
+        #btn-C { background-color: #e9c46a; }
+        #btn-D { background-color: #264653; }
+        #status-msg { font-size: 1.2rem; font-weight: bold; color: #333; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div id="login-screen">
+        <h2>名前を入力してください</h2>
+        <input type="text" id="student-name" placeholder="出席番号・名前など">
+        <br>
+        <button class="btn-join" onclick="joinRoom()">準備完了</button>
+    </div>
+
+    <div id="buzzer-screen" style="display: none;">
+        <h2 id="display-name"></h2>
+        <div id="status-msg">答えを選んでください</div>
+        <div class="grid">
+            <button class="btn-choice" id="btn-A" onclick="sendAnswer('A')">A</button>
+            <button class="btn-choice" id="btn-B" onclick="sendAnswer('B')">B</button>
+            <button class="btn-choice" id="btn-C" onclick="sendAnswer('C')">C</button>
+            <button class="btn-choice" id="btn-D" onclick="sendAnswer('D')">D</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let myName = '';
+
+        function joinRoom() {
+            const nameInput = document.getElementById('student-name').value.trim();
+            if (nameInput === '') {
+                alert('名前を入力してください！');
+                return;
+            }
+            myName = nameInput;
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('buzzer-screen').style.display = 'block';
+            document.getElementById('display-name').textContent = myName + ' さん';
+        }
+
+        function sendAnswer(choice) {
+            socket.emit('submit_answer', { name: myName, choice: choice });
+            
+            // 押した後はボタンを無効化する
+            const buttons = document.querySelectorAll('.btn-choice');
+            buttons.forEach(btn => btn.disabled = true);
+            document.getElementById('status-msg').textContent = choice + ' を送信しました！待機中...';
+        }
+
+        // 先生がリセットした時の処理
+        socket.on('clear_student', () => {
+            const buttons = document.querySelectorAll('.btn-choice');
+            buttons.forEach(btn => btn.disabled = false);
+            document.getElementById('status-msg').textContent = '次の問題です！答えを選んでください';
+        });
+    </script>
+</body>
+</html>
