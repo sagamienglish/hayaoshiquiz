@@ -12,7 +12,6 @@
         #score-panel { display: none; background: #fff; border-radius: 10px; padding: 10px; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-weight: bold; font-size: 1.2rem;}
         #my-score { color: #ff6b6b; font-size: 1.8rem; font-family: 'Fredoka One', cursive; margin: 0 5px;}
 
-        /* 問題文表示エリア */
         #question-display { display: none; background: #fff; border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         #q-num { color: #007bff; font-weight: bold; font-size: 1rem; margin-bottom: 5px; }
         #q-text { font-size: 1.2rem; font-weight: bold; color: #333; line-height: 1.4; word-wrap: break-word;}
@@ -27,7 +26,6 @@
         .btn-choice:active { transform: translateY(6px); box-shadow: none; }
         .btn-choice:disabled { opacity: 0.5; cursor: not-allowed; transform: translateY(6px); box-shadow: none;}
         
-        /* 選択肢のアルファベットとテキストの調整 */
         .choice-letter { font-size: 2.5rem; line-height: 1; margin-bottom: 5px; }
         .choice-text { font-family: 'Noto Sans JP', sans-serif; font-size: 1rem; font-weight: bold; word-break: break-all; padding: 0 5px; line-height: 1.2;}
 
@@ -38,7 +36,6 @@
         
         #status-msg { font-size: 1.2rem; font-weight: bold; color: #555; margin-top: 20px; padding: 0 10px;}
 
-        /* 生徒画面の正解・不正解アニメーション */
         #result-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; flex-direction: column; justify-content: center; align-items: center; color: white; font-family: 'Fredoka One', 'Noto Sans JP', sans-serif; }
         .result-text { font-size: 4rem; font-weight: bold; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); text-align: center;}
         .overlay-correct { background: rgba(76, 175, 80, 0.95); }
@@ -110,6 +107,7 @@
         
         let myName = '';
         let myChoice = ''; 
+        let currentRanking = []; // 全員の最新ランキングを保持
 
         function joinRoom() {
             const nameInput = document.getElementById('student-name').value.trim();
@@ -146,7 +144,6 @@
         }
 
         if (socket) {
-            // 新しい問題を受信したときの処理
             socket.on('new_question', (data) => {
                 document.getElementById('q-num').innerText = `第 ${data.questionNumber} 問 / 全 ${data.totalQuestions} 問`;
                 document.getElementById('q-text').innerText = data.question;
@@ -158,13 +155,11 @@
                 
                 document.getElementById('status-msg').textContent = '答えを選んでね！';
                 
-                // ボタンの有効化と記憶のリセット
                 myChoice = ''; 
                 const buttons = document.querySelectorAll('.btn-choice');
                 buttons.forEach(btn => btn.disabled = false);
             });
 
-            // 教員側からリセットがかかった場合
             socket.on('clear_student', () => {
                 myChoice = ''; 
                 const buttons = document.querySelectorAll('.btn-choice');
@@ -180,6 +175,11 @@
                 if (players[myName] !== undefined) {
                     document.getElementById('my-score').textContent = players[myName];
                 }
+            });
+
+            // ランキングデータを常に最新に保つ
+            socket.on('update_ranking', (ranking) => {
+                currentRanking = ranking;
             });
 
             socket.on('result_announced', (correctChoice) => {
@@ -208,13 +208,4 @@
                 }, 3500);
             });
 
-            // 全問終了時の処理
-            socket.on('quiz_finished', () => {
-                document.getElementById('q-num').innerText = "Finish!";
-                document.getElementById('q-text').innerText = "全問終了しました！先生の画面を見てね👀";
-                document.getElementById('buzzer-screen').style.display = 'none';
-            });
-        }
-    </script>
-</body>
-</html>
+            // ▼ 全問終了時の
