@@ -16,17 +16,14 @@
         .qr-section { text-align: center; margin: 25px 0; padding: 15px; background: #e9ecef; border-radius: 10px; }
         .qr-section img { border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 10px; }
         
-        /* トップのヘッダー情報 */
         .header-info { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; background: #fff; padding: 10px 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .score-settings-inline { font-size: 0.85rem; color: #555; display: flex; align-items: center; gap: 5px; background: #f8f9fa; padding: 5px 10px; border-radius: 5px; border: 1px solid #ddd; font-weight: bold;}
         .score-settings-inline input { width: 40px; padding: 3px; font-size: 0.85rem; text-align: center; border: 1px solid #ccc; border-radius: 3px; font-weight: bold; background: white;}
         
-        /* 問題表示ボックス */
         .question-box { background: white; margin-bottom: 20px; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; border: 2px dashed #ccc;}
-        .question-box h2 { font-size: 1.2rem; color: #007bff; margin: 0 0 10px 0; font-family: 'Noto Sans JP', sans-serif;}
+        .question-box h2 { font-size: 1.2rem; color: #007bff; margin: 0 0 10px 0;}
         .question-box h3 { font-size: 1.8rem; color: #333; margin: 0;}
         
-        /* Top 5 表示 */
         #current-leaders { font-size: 0.9rem; color: #444; text-align: right; line-height: 1.4; font-weight: bold;}
         .leader-title { font-size: 1rem; color: #000; margin-bottom: 5px; border-bottom: 2px solid #ccc; text-align: right;}
 
@@ -43,17 +40,19 @@
         .btn-finish { background-color: #343a40; display: block; margin: 40px auto; font-size: 1.5rem; }
 
         .container { display: flex; justify-content: space-around; gap: 10px; }
-        .choice-box { flex: 1; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
-        .choice-header { padding: 20px 0; text-align: center; color: white; font-size: 2.5rem; font-family: 'Fredoka One', cursive; cursor: pointer; position: relative;}
-        .choice-header:hover::after { content: '正解にする'; position: absolute; top: 10px; right: 10px; font-size: 1rem; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; font-family: 'Noto Sans JP', sans-serif;}
+        .choice-box { flex: 1; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 8px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column;}
+        .choice-header { padding: 15px 0; text-align: center; color: white; font-size: 2rem; font-family: 'Fredoka One', cursive; cursor: pointer; position: relative;}
+        .choice-header:hover::after { content: '正解にする'; position: absolute; top: 10px; right: 10px; font-size: 0.9rem; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; font-family: 'Noto Sans JP', sans-serif;}
+        
+        .choice-text { font-family: 'Noto Sans JP', sans-serif; font-size: 1rem; padding: 10px; text-align: center; font-weight: bold; color: #333; border-bottom: 2px solid #eee; background: #fafafa; min-height: 2.5em; display: flex; align-items: center; justify-content: center; word-break: break-all;}
+
         .bg-A { background-color: #e63946; }
         .bg-B { background-color: #2a9d8f; }
         .bg-C { background-color: #e9c46a; }
         .bg-D { background-color: #264653; }
-        ol { padding-left: 20px; margin: 15px; font-size: 1.2rem; font-weight: bold; min-height: 100px;}
+        ol { padding-left: 20px; margin: 15px; font-size: 1.2rem; font-weight: bold; min-height: 100px; flex-grow: 1;}
         li { margin-bottom: 8px; border-bottom: 1px dashed #ddd; }
 
-        /* 設定モーダル */
         #settings-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 600px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .settings-group { margin-bottom: 15px; font-size: 1.1rem; background: #f8f9fa; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; font-weight: bold;}
@@ -62,7 +61,6 @@
         .excel-group textarea { width: 100%; font-size: 1rem; padding: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; font-family: monospace; white-space: pre;}
         .btn-save { background-color: #4CAF50; width: 100%; font-size: 1.2rem; padding: 12px; margin-top: 10px; }
 
-        /* 教員画面の正解アニメーション */
         #correct-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; flex-direction: column; justify-content: center; align-items: center; }
         .correct-text { color: #ffeb3b; font-size: 7rem; font-family: 'Fredoka One', cursive; text-shadow: 4px 4px 0px #ff9800; animation: popZoom 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         .correct-close { margin-top: 40px; font-size: 1.5rem; padding: 15px 40px; background: white; color: black; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 0px #ccc; }
@@ -75,16 +73,15 @@
         .rank-item { background: white; margin: 10px auto; width: 80%; max-width: 500px; padding: 20px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.1); opacity: 0; transform: translateY(50px); animation: popIn 0.5s forwards; }
         .rank-1 { font-size: 2.5rem; color: #d4af37; background: #fffdf0; border: 3px solid #d4af37;}
         @keyframes popIn { to { opacity: 1; transform: translateY(0); } }
-        
         .user-badge { display: inline-block; background: #007bff; color: white; padding: 8px 15px; border-radius: 20px; margin: 5px; font-weight: bold; font-size: 1.1rem; }
     </style>
 </head>
 <body>
 
-    <audio id="audio-bgm" loop src="https://assets.mixkit.co/music/preview/mixkit-game-level-music-686.mp3"></audio>
-    <audio id="audio-reveal" src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3"></audio>
-    <audio id="audio-correct" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3"></audio>
-    <audio id="audio-reset" src="https://assets.mixkit.co/sfx/preview/mixkit-fast-double-click-on-mouse-275.mp3"></audio>
+    <audio id="audio-bgm" src="bgm.mp3" loop></audio>
+    <audio id="audio-reveal" src="reveal.mp3" preload="auto"></audio>
+    <audio id="audio-correct" src="correct.mp3" preload="auto"></audio>
+    <audio id="audio-reset" src="reset.mp3" preload="auto"></audio>
 
     <div id="lobby">
         <h1>Quiz</h1>
@@ -121,7 +118,7 @@
                 <textarea id="quizData" rows="6" placeholder="apple&#9;りんご&#9;みかん&#9;ばなな&#9;ぶどう&#9;1"></textarea>
             </div>
 
-            <button class="btn btn-save" onclick="closeSettings()">保存して閉じる</button>
+            <button class="btn btn-save" onclick="saveAndCloseSettings()">保存して閉じる</button>
         </div>
     </div>
 
@@ -141,7 +138,7 @@
         <div class="question-box">
             <h2 id="teacher-q-num">第 - 問</h2>
             <h3 id="teacher-q-text">問題を読み込み中...</h3>
-            </div>
+        </div>
 
         <div class="controls">
             <button class="btn-reveal" onclick="revealNames()">👀 回答者名チェック</button>
@@ -153,18 +150,22 @@
         <div class="container">
             <div class="choice-box">
                 <div class="choice-header bg-A" onclick="judgeChoice('A')">A</div>
+                <div class="choice-text" id="teacher-text-A"></div>
                 <ol id="list-A"></ol>
             </div>
             <div class="choice-box">
                 <div class="choice-header bg-B" onclick="judgeChoice('B')">B</div>
+                <div class="choice-text" id="teacher-text-B"></div>
                 <ol id="list-B"></ol>
             </div>
             <div class="choice-box">
                 <div class="choice-header bg-C" onclick="judgeChoice('C')">C</div>
+                <div class="choice-text" id="teacher-text-C"></div>
                 <ol id="list-C"></ol>
             </div>
             <div class="choice-box">
                 <div class="choice-header bg-D" onclick="judgeChoice('D')">D</div>
+                <div class="choice-text" id="teacher-text-D"></div>
                 <ol id="list-D"></ol>
             </div>
         </div>
@@ -189,24 +190,53 @@
         let isRevealed = false;
         let isJudged = false;
         let currentRanking = [];
-        let currentCorrectAnswer = ""; // 現在の問題の正解を記憶
+        let currentCorrectAnswer = ""; 
         const choiceLetters = ["A", "B", "C", "D"];
 
-        // オーディオ要素の取得
-        const bgm = document.getElementById('audio-bgm');
-        const sfxReveal = document.getElementById('audio-reveal');
-        const sfxCorrect = document.getElementById('audio-correct');
-        const sfxReset = document.getElementById('audio-reset');
+        // ==========================================
+        // 音声再生コントロール（Apple TV対応版）
+        // ==========================================
+        function playAudio(id) {
+            const audioEl = document.getElementById(id);
+            if(audioEl) {
+                audioEl.currentTime = 0; // 連続して押しても最初から再生されるようにリセット
+                audioEl.play().catch(e => console.log(`[Audio] ${id} の再生がブロックされました:`, e));
+            }
+        }
 
-        // 音量を少し調整（BGMが大きすぎないように）
-        bgm.volume = 0.3;
-        sfxCorrect.volume = 0.8;
+        // ==========================================
+        // ブラウザ保存機能（LocalStorage）
+        // ==========================================
+        document.addEventListener("DOMContentLoaded", () => {
+            if(localStorage.getItem('quizData')) {
+                document.getElementById('quizData').value = localStorage.getItem('quizData');
+            }
+            if(localStorage.getItem('settingBase')) {
+                document.getElementById('setting-base').value = localStorage.getItem('settingBase');
+            }
+            if(localStorage.getItem('settingBonus')) {
+                document.getElementById('setting-bonus').value = localStorage.getItem('settingBonus');
+            }
+            if(localStorage.getItem('settingCount')) {
+                document.getElementById('setting-count').value = localStorage.getItem('settingCount');
+            }
+        });
 
-        // --- 設定モーダルの開閉 ---
+        function saveLocalData() {
+            localStorage.setItem('quizData', document.getElementById('quizData').value);
+            localStorage.setItem('settingBase', document.getElementById('setting-base').value);
+            localStorage.setItem('settingBonus', document.getElementById('setting-bonus').value);
+            localStorage.setItem('settingCount', document.getElementById('setting-count').value);
+        }
+
+        // ==========================================
+        // UI・クイズ進行コントロール
+        // ==========================================
         function openSettings() {
             document.getElementById('settings-modal').style.display = 'flex';
         }
-        function closeSettings() {
+        function saveAndCloseSettings() {
+            saveLocalData();
             document.getElementById('settings-modal').style.display = 'none';
         }
 
@@ -219,15 +249,21 @@
         });
 
         function startQuiz() {
+            saveLocalData(); 
+            
+            // BGMの再生
+            const bgm = document.getElementById('audio-bgm');
+            bgm.volume = 0.3;
+            playAudio('audio-bgm');
+
             const rawData = document.getElementById('quizData').value;
             const parsedQuestions = [];
 
             if (!rawData.trim()) {
-                // データが空の場合は、口頭出題用の空のデータを作る
                 parsedQuestions.push({
                     question: "【 口頭問題 】先生の質問を聞いてください",
                     choices: ["", "", "", ""],
-                    correctChoiceLetter: "" // 空にしておく
+                    correctChoiceLetter: "" 
                 });
             } else {
                 const lines = rawData.trim().split('\n');
@@ -245,9 +281,6 @@
             }
 
             if (parsedQuestions.length === 0) return alert("データの形式が正しくありません。");
-
-            // BGM再生開始
-            bgm.play().catch(e => console.log("BGM自動再生ブロック:", e));
 
             socket.emit('start_quiz_data', parsedQuestions);
 
@@ -268,8 +301,12 @@
         socket.on('new_question', (data) => {
             document.getElementById('teacher-q-num').innerText = `第 ${data.questionNumber} 問 / 全 ${data.totalQuestions} 問`;
             document.getElementById('teacher-q-text').innerText = data.question;
-            // 画面には表示しないが、裏側で正解を記憶しておく
             currentCorrectAnswer = data.correctChoiceLetter || ""; 
+            
+            const letters = ['A', 'B', 'C', 'D'];
+            data.choices.forEach((choice, index) => {
+                document.getElementById(`teacher-text-${letters[index]}`).innerText = choice;
+            });
         });
 
         socket.on('update_answers_teacher', (answers) => {
@@ -292,11 +329,10 @@
 
         function revealNames() {
             isRevealed = true;
-            sfxReveal.play(); // 名前オープンの音
+            playAudio('audio-reveal');
             renderAnswers();
         }
 
-        // 新機能：「答え合わせ」ボタン用
         function autoJudge() {
             if (!currentCorrectAnswer) {
                 alert("この問題には正解が設定されていません。\nA〜Dのパネルを直接クリックして正解を発表してください。");
@@ -307,10 +343,6 @@
 
         function judgeChoice(choice) {
             if (isJudged) return; 
-            if (!isRevealed) {
-                alert('先に「👀 回答者名チェック」を押して、名前を公開してください！');
-                return;
-            }
             isJudged = true;
             
             const currentBase = document.getElementById('inline-base').value;
@@ -322,8 +354,7 @@
                 currentSettings: { basePoints: currentBase, bonusPoints: currentBonus, bonusCount: currentCount } 
             });
 
-            // 正解発表の音
-            sfxCorrect.play();
+            playAudio('audio-correct');
 
             const overlay = document.getElementById('correct-overlay');
             const text = document.getElementById('correct-display-text');
@@ -339,14 +370,14 @@
             socket.emit('reset_question');
             isRevealed = false;
             isJudged = false;
-            sfxReset.play(); // リセット音
+            playAudio('audio-reset');
         }
 
         function nextQuestion() {
             socket.emit('next_question');
             isRevealed = false;
             isJudged = false;
-            sfxReset.play();
+            playAudio('audio-reset');
         }
 
         socket.on('update_ranking', (ranking) => {
@@ -368,7 +399,8 @@
         function finishQuiz() {
             if(!confirm('クイズを終了して結果発表に移りますか？')) return;
 
-            bgm.pause(); // BGM停止
+            const bgm = document.getElementById('audio-bgm');
+            if(bgm) bgm.pause();
 
             document.getElementById('quiz-screen').style.display = 'none';
             document.getElementById('results').style.display = 'block';
@@ -392,7 +424,7 @@
                     if(rank === 1) div.classList.add('rank-1');
                     div.innerHTML = `第 ${rank} 位: ${player.name} <span style="color:#666; font-size:1rem;">(${player.score}点)</span>`;
                     podium.prepend(div);
-                    sfxReveal.play(); // 順位発表ごとにポッと音を鳴らす
+                    playAudio('audio-reveal');
                 }, delay);
                 delay += 1000;
             });
