@@ -69,7 +69,13 @@
                 alert('名前を入力してください！');
                 return;
             }
-            myName = nameInput;
+            
+            // ランダムな動物の絵文字配列
+            const emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐧', '🐤', '🦉', '🦄', '🐝', '🐢', '🐙', '🐬'];
+            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+            
+            // 名前の先頭に絵文字をくっつける
+            myName = randomEmoji + ' ' + nameInput;
             
             if (socket) {
                 socket.emit('join_game', myName); 
