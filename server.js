@@ -109,7 +109,7 @@ io.on('connection', (socket) => {
                 totalQuestions: quizData.length,
                 question: q.question,
                 choices: q.choices,
-                // もし自動正解判定を組み込むなら、ここで q.correctIndex を保持しておけます
+                correctChoiceLetter: q.correctChoiceLetter
             });
         }
     }
