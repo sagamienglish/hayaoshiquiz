@@ -6,7 +6,7 @@
     <title>回答用端末</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Noto Sans JP', sans-serif; text-align: center; background-color: #f0f4f8; margin: 0; padding: 10px; }
+        body { font-family: 'Noto Sans JP', sans-serif; text-align: center; background-color: #f0f4f8; margin: 0; padding: 10px; padding-bottom: 60px; /* フッター用に余白確保 */ }
         h2 { color: #333; }
         
         #score-panel { display: none; background: #fff; border-radius: 10px; padding: 10px; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-weight: bold; font-size: 1.2rem;}
@@ -27,7 +27,9 @@
         .btn-choice:disabled { opacity: 0.5; cursor: not-allowed; transform: translateY(6px); box-shadow: none;}
         
         .choice-letter { font-size: 2.5rem; line-height: 1; margin-bottom: 5px; }
-        .choice-text { font-family: 'Noto Sans JP', sans-serif; font-size: 1rem; font-weight: bold; word-break: break-all; padding: 0 5px; line-height: 1.2;}
+        /* ② 選択肢テキストもアニメーション表示 */
+        .choice-text { font-family: 'Noto Sans JP', sans-serif; font-size: 1rem; font-weight: bold; word-break: break-all; padding: 0 5px; line-height: 1.2; opacity: 0; transition: opacity 0.3s;}
+        .choice-text.show { opacity: 1; }
 
         #btn-A { background-color: #e63946; box-shadow: 0 6px 0px #b02a36;}
         #btn-B { background-color: #2a9d8f; box-shadow: 0 6px 0px #1e756a;}
@@ -37,9 +39,16 @@
         #status-msg { font-size: 1.2rem; font-weight: bold; color: #555; margin-top: 20px; padding: 0 10px;}
 
         #result-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; flex-direction: column; justify-content: center; align-items: center; color: white; font-family: 'Fredoka One', 'Noto Sans JP', sans-serif; }
-        .result-text { font-size: 4rem; font-weight: bold; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); text-align: center;}
+        .result-text { font-size: 3rem; font-weight: bold; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); text-align: center; margin-bottom: 20px;}
+        /* ① 正解テキスト表示用 */
+        .result-detail { font-family: 'Noto Sans JP', sans-serif; font-size: 1.5rem; font-weight: bold; background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px; max-width: 80%;}
+        
         .overlay-correct { background: rgba(76, 175, 80, 0.95); }
         .overlay-wrong { background: rgba(244, 67, 54, 0.95); }
+
+        /* ③ 現在の順位を常時表示するフッター */
+        #rank-footer { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #343a40; color: white; padding: 10px 0; font-size: 1.2rem; font-weight: bold; box-shadow: 0 -2px 10px rgba(0,0,0,0.2); z-index: 500;}
+        #current-my-rank { color: #f8f9fa; font-size: 1.5rem; font-family: 'Fredoka One', cursive; margin: 0 5px;}
 
         @keyframes popScale {
             0% { transform: scale(0.5); opacity: 0; }
@@ -94,6 +103,10 @@
 
     <div id="result-overlay">
         <div class="result-text" id="result-display-text"></div>
+        <div class="result-detail" id="result-detail-text"></div> </div>
+
+    <div id="rank-footer">
+        あなたの現在の順位: <span id="current-my-rank">-</span> 位
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -108,9 +121,9 @@
         let myName = '';
         let myChoice = ''; 
         let currentRanking = [];
+        let currentChoicesData = {}; // ① 今回の選択肢データを保持
 
         function joinRoom() {
-            // エラー検知：サーバーと繋がっていない場合は警告を出す
             if (typeof io === 'undefined') {
                 alert("サーバーとの通信準備ができていません。画面を更新（リロード）してください。");
                 return;
@@ -136,6 +149,8 @@
             document.getElementById('question-display').style.display = 'block';
             document.getElementById('buzzer-screen').style.display = 'block';
             document.getElementById('display-name').textContent = myName;
+            
+            document.getElementById('rank-footer').style.display = 'block'; // フッター表示
         }
 
         function sendAnswer(choice) {
@@ -154,17 +169,39 @@
                 document.getElementById('q-num').innerText = `第 ${data.questionNumber} 問 / 全 ${data.totalQuestions} 問`;
                 document.getElementById('q-text').innerText = data.question;
                 
+                // ② 選択肢ディレイ演出 ＆ ① のためのデータ保存
                 const letters = ['A', 'B', 'C', 'D'];
-                data.choices.forEach((choice, index) => {
-                    document.getElementById(`text-${letters[index]}`).innerText = choice;
+                myChoice = ''; 
+                
+                const buttons = document.querySelectorAll('.btn-choice');
+                buttons.forEach(btn => {
+                    btn.disabled = true; // 出揃うまでボタンは押せない
+                });
+                letters.forEach((l, index) => {
+                    const el = document.getElementById(`text-${l}`);
+                    el.innerText = '';
+                    el.classList.remove('show');
+                    currentChoicesData[l] = data.choices[index]; // 保持しておく
                 });
                 
-                document.getElementById('status-msg').textContent = '答えを選んでね！';
-                
-                myChoice = ''; 
-                const buttons = document.querySelectorAll('.btn-choice');
-                buttons.forEach(btn => btn.disabled = false);
+                document.getElementById('status-msg').textContent = '先生が問題を出しています...';
+
+                setTimeout(() => { showChoice('A'); }, 1000);
+                setTimeout(() => { showChoice('B'); }, 1500);
+                setTimeout(() => { showChoice('C'); }, 2000);
+                setTimeout(() => { 
+                    showChoice('D'); 
+                    // Dまで出たらボタン解放
+                    buttons.forEach(btn => btn.disabled = false);
+                    document.getElementById('status-msg').textContent = '答えを選んでね！';
+                }, 2500);
             });
+
+            function showChoice(letter) {
+                const el = document.getElementById(`text-${letter}`);
+                el.innerText = currentChoicesData[letter];
+                el.classList.add('show');
+            }
 
             socket.on('clear_student', () => {
                 myChoice = ''; 
@@ -185,6 +222,18 @@
 
             socket.on('update_ranking', (ranking) => {
                 currentRanking = ranking;
+                
+                // ③ フッターの順位を更新
+                let myRank = -1;
+                for (let i = 0; i < ranking.length; i++) {
+                    if (ranking[i].name === myName) {
+                        myRank = i + 1;
+                        break;
+                    }
+                }
+                if (myRank > 0) {
+                    document.getElementById('current-my-rank').innerText = myRank;
+                }
             });
 
             socket.on('result_announced', (correctChoice) => {
@@ -192,7 +241,18 @@
                 
                 const overlay = document.getElementById('result-overlay');
                 const text = document.getElementById('result-display-text');
+                const detailText = document.getElementById('result-detail-text');
+                
                 overlay.style.display = 'flex';
+                
+                // ① 正解の文字列を構築
+                let ansString = "";
+                if (currentChoicesData[correctChoice]) {
+                    ansString = `正解は [ ${correctChoice}: ${currentChoicesData[correctChoice]} ]`;
+                } else {
+                    ansString = `正解は [ ${correctChoice} ]`;
+                }
+                detailText.innerText = ansString;
                 
                 if (myChoice === correctChoice) {
                     overlay.className = 'overlay-correct';
@@ -210,13 +270,14 @@
                 
                 setTimeout(() => {
                     overlay.style.display = 'none';
-                }, 3500);
+                }, 4000);
             });
 
             socket.on('quiz_finished', () => {
                 document.getElementById('q-num').innerText = "Finish!";
                 document.getElementById('q-text').innerText = "先生の画面で結果発表中...👀";
                 document.getElementById('buzzer-screen').style.display = 'none';
+                document.getElementById('rank-footer').style.display = 'none'; // 終了時はフッターを消す
                 
                 let myRank = -1;
                 let myFinalScore = 0;
